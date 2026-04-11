@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-<title>Car Paws</title>
+<title>CarPaws</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fredoka+One&display=swap" rel="stylesheet"/>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -584,9 +584,17 @@ function showRegScreen(){
 }
 
 async function doRegisterTG(){
-  // Potong 500 koin dari Carpet Shop
   const btn=g('reg-btn');btn.disabled=true;btn.textContent='Memproses...';
   const re=g('reg-err');re.textContent='';
+
+  // Cek duplikat — max 1 akun owner per TG ID
+  const{data:existOwner}=await db.from('cp_accounts').select('id')
+    .eq('telegram_user_id',TG_ID).eq('account_type','owner').maybeSingle();
+  if(existOwner){
+    re.textContent='Kamu sudah punya akun owner!';
+    btn.disabled=false;btn.textContent='Daftar & Bayar 500 🪙';
+    return;
+  }
 
   const{data:cu}=await db.from('users').select('koin').eq('user_id',parseInt(TG_ID)).maybeSingle();
   if(!cu){re.textContent='Akun Carpet Shop tidak ditemukan! Mulai dulu di @carpetsrobot';btn.disabled=false;btn.textContent='Daftar & Bayar 500 🪙';return;}
@@ -602,7 +610,7 @@ async function doRegisterTG(){
   const{data:acc,error}=await db.from('cp_accounts').insert({
     telegram_user_id:TG_ID,display_name:nm,username:un,
     account_type:'owner',avatar_emoji:emoji,
-    is_verified:false,followers_count:0,claimed_rewards:[],total_likes_received:0,claimed_like_rewards:[],total_likes_received:0,claimed_like_rewards:[]
+    is_verified:false,followers_count:0,claimed_rewards:[],total_likes_received:0,claimed_like_rewards:[]
   }).select().single();
 
   if(error){re.textContent='Gagal buat akun: '+error.message;btn.disabled=false;btn.textContent='Daftar & Bayar 500 🪙';
@@ -623,6 +631,7 @@ async function doRegisterTG(){
   g('reg-screen').style.display='none';
   sessionStorage.setItem(SESS_KEY(),CU.id);
   startApp();
+  setTimeout(()=>toast('🎉 Akun berhasil dibuat! Selamat datang di Car Paws~'),800);
 }
 
 async function doLogout(){
@@ -668,6 +677,10 @@ function showConfirmSheet(title,body,okTxt,onOk){
 function closeConfirmSheet(){document.getElementById('conf-ov')?.remove();window._confirmCb=null;}
 
 function showPicker(){
+  // Sembunyikan tombol buat akun owner kalau sudah punya
+  const hasOwner=MYA.some(a=>a.account_type==='owner'&&a.telegram_user_id===TG_ID);
+  const buatOwnerBtn=document.querySelector('[onclick*="openBuatOwner"]');
+  if(buatOwnerBtn)buatOwnerBtn.style.display=hasOwner?'none':'';
   const owners=MYA.filter(a=>a.account_type==='owner');
   const pets=MYA.filter(a=>a.account_type==='pet');
   let h='';
@@ -702,6 +715,12 @@ function confirmPick(){
 
 function startApp(){
   g('app').style.display='flex';updateTbAva();loadFeed();subRT();checkNDot();
+  // Sembunyikan tombol buat akun owner kalau sudah punya
+  const hasOwner=MYA.some(a=>a.account_type==='owner'&&a.telegram_user_id===TG_ID);
+  setTimeout(()=>{
+    const buatOwnerBtn=document.querySelector('[onclick*="openBuatOwner"]');
+    if(buatOwnerBtn)buatOwnerBtn.style.display=hasOwner?'none':'';
+  },100);
 }
 function updateTbAva(){
   const el=g('tb-ava');
@@ -1155,7 +1174,7 @@ async function createPetAcc(){
     telegram_user_id:TG_ID,display_name:nm,username:un,
     account_type:'pet',avatar_emoji:em,
     carpet_pet_id:_selPet?String(_selPet):null,
-    is_verified:false,followers_count:0,claimed_rewards:[],total_likes_received:0,claimed_like_rewards:[],total_likes_received:0,claimed_like_rewards:[],
+    is_verified:false,followers_count:0,claimed_rewards:[],total_likes_received:0,claimed_like_rewards:[],
     owner2_tg_id:owner2TgId
   }).select().single();
   if(error){toast(error.code==='23505'?'❌ Username sudah dipakai!':'❌ Gagal buat akun!');return;}
@@ -1211,10 +1230,11 @@ async function doSharePet(){
   toast('✅ Akses berhasil dibagikan ke partner!');
 }
 
-function openBuatOwner(){
-  // Cek apakah sudah punya akun owner
-  const hasOwner=MYA.some(a=>a.account_type==='owner'&&a.telegram_user_id===TG_ID);
-  if(hasOwner){toast('Kamu sudah punya akun owner!');return;}
+async function openBuatOwner(){
+  // Cek DB langsung biar akurat
+  const{data:existOwner}=await db.from('cp_accounts').select('id')
+    .eq('telegram_user_id',TG_ID).eq('account_type','owner').maybeSingle();
+  if(existOwner){toast('❌ Kamu sudah punya akun owner!');return;}
   // Tampil reg screen tab buat baru
   g('app').style.display='none';
   showRegScreen();
