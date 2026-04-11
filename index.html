@@ -419,60 +419,42 @@ let CU=null,MYA=[],feedTab='all',curS='home',curPID=null,_mf=null,_af=null,_selP
 // Session akun yang sedang aktif (disimpan di sessionStorage per TG_ID)
 const SESS_KEY=()=>'cp_active_'+(TG_ID||'x');
 
-// Panggil ready() SEGERA saat script load, sebelum apapun
-(function(){
-  try{
-    if(window.Telegram?.WebApp){
-      window.Telegram.WebApp.ready();
-      window.Telegram.WebApp.expand();
-    }
-  }catch(e){}
-})();
-
 window.onload=async()=>{
-  // Deteksi TG ID DULU sebelum splash selesai
-  const tg=window.Telegram?.WebApp;
+  await sleep(1600);
+  g('splash').classList.add('out');
+  await sleep(500);
 
-  // Method 1: initDataUnsafe langsung
+  const tg=window.Telegram?.WebApp;
+  if(tg){tg.ready();tg.expand();}
+
+  // DEBUG — hapus setelah fix
+  console.log('TG WebApp:', tg);
+  console.log('initData:', tg?.initData);
+  console.log('initDataUnsafe:', JSON.stringify(tg?.initDataUnsafe));
+  console.log('user:', tg?.initDataUnsafe?.user);
+
+  // Sama persis kayak index.html Carpets
   TG_ID=tg?.initDataUnsafe?.user?.id ? String(tg.initDataUnsafe.user.id) : null;
   TG_NAME=tg?.initDataUnsafe?.user?.first_name || tg?.initDataUnsafe?.user?.username || null;
   TG_USER=tg?.initDataUnsafe?.user || null;
 
-  // Method 2: parse dari initData string
-  if(!TG_ID && tg?.initData && tg.initData.length > 0){
+  // Fallback parse dari initData string
+  if(!TG_ID && tg?.initData){
     try{
       const params=new URLSearchParams(tg.initData);
-      const userStr=params.get('user');
-      if(userStr){
-        const u=JSON.parse(decodeURIComponent(userStr));
-        if(u?.id){TG_ID=String(u.id);TG_NAME=u.first_name||u.username||null;TG_USER=u;}
-      }
-    }catch(e){console.warn('initData parse error:',e);}
+      const u=JSON.parse(decodeURIComponent(params.get('user')||'{}'));
+      if(u.id){TG_ID=String(u.id);TG_NAME=u.first_name||u.username||null;TG_USER=u;}
+    }catch(e){}
   }
 
-  // Method 3: URL param (untuk testing)
+  // Fallback URL param
   if(!TG_ID){
     const p=new URLSearchParams(location.search);
     if(p.get('tg_id')){TG_ID=p.get('tg_id');TG_NAME=p.get('tg_name')||'User';}
   }
 
-  console.log('TG_ID detected:', TG_ID, '| TG_NAME:', TG_NAME);
-
-  await sleep(1600);
-  g('splash').classList.add('out');
-  await sleep(500);
-
-  if(!TG_ID){
-    // Tampil error jelas, bukan fallback ke 0
-    g('splash').style.opacity='1';g('splash').style.pointerEvents='auto';
-    g('splash').innerHTML=`<img src="https://files.catbox.moe/mzuka8.png" style="width:70px;border-radius:20px;margin-bottom:16px"/>
-      <div style="font-family:'Fredoka One',cursive;font-size:1.5rem;color:#fff;margin-bottom:10px">Car Paws</div>
-      <div style="color:rgba(255,255,255,.9);font-size:.9rem;text-align:center;padding:0 24px;line-height:1.6">
-        Buka Car Paws lewat<br><b>@carpetsrobot</b> ya~<br>
-        <span style="font-size:.78rem;opacity:.7">Tidak bisa dibuka langsung di browser</span>
-      </div>`;
-    return;
-  }
+  // Fallback default (sama kayak Carpets) — kalau semua gagal
+  if(!TG_ID){TG_ID='0';TG_NAME='User';}
 
   await loadAccs();
 };
@@ -903,18 +885,26 @@ async function openProf(accId){
 
 async function renderProf(accId,isOwn,el){
   el.innerHTML=ld();
-  const{data:a}=await db.from('cp_accounts').select('*').eq('id',accId).single();
-  if(!a){el.innerHTML=emp('😅','Tidak ditemukan','');return;}
-  const[{count:pc},{count:flwrs},{count:flwng}]=await Promise.all([
-    db.from('cp_posts').select('*',{count:'exact',head:true}).eq('account_id',accId).eq('is_reply',false),
+  // Semua query jalan paralel sekaligus
+  const queries=[
+    db.from('cp_accounts').select('*').eq('id',accId).single(),
+    db.from('cp_posts').select('*,account:cp_accounts(*)').eq('account_id',accId).eq('is_reply',false).order('created_at',{ascending:false}).limit(20),
     db.from('cp_follows').select('*',{count:'exact',head:true}).eq('following_id',accId),
     db.from('cp_follows').select('*',{count:'exact',head:true}).eq('follower_id',accId),
-  ]);
-  let isFol=false;
-  if(CU&&CU.id!==accId){const{data:f}=await db.from('cp_follows').select('id').eq('follower_id',CU.id).eq('following_id',accId).maybeSingle();isFol=!!f;}
-  const{data:posts}=await db.from('cp_posts').select('*,account:cp_accounts(*)').eq('account_id',accId).eq('is_reply',false).order('created_at',{ascending:false}).limit(20);
+    db.from('cp_posts').select('*',{count:'exact',head:true}).eq('account_id',accId).eq('is_reply',false),
+  ];
+  if(CU&&CU.id!==accId) queries.push(db.from('cp_follows').select('id').eq('follower_id',CU.id).eq('following_id',accId).maybeSingle());
+  const results=await Promise.all(queries);
+  const a=results[0].data;
+  if(!a){el.innerHTML=emp('😅','Tidak ditemukan','');return;}
+  const posts=results[1].data||[];
+  const flwrs=results[2].count||0;
+  const flwng=results[3].count||0;
+  const pc=results[4].count||0;
+  const isFol=CU&&CU.id!==accId ? !!(results[5]?.data) : false;
+  const switchBtn=isOwn&&MYA.length>1?`<button class="btn-out" onclick="showPicker()" style="padding:9px 12px">🔄</button>`:'';
   const acts=isOwn
-    ?`<button class="btn-out" onclick="openSettings()">⚙️ Settings</button><button class="btn-out" onclick="openEdit()">✏️ Edit</button>`
+    ?`${switchBtn}<button class="btn-out" onclick="openSettings()">⚙️</button><button class="btn-out" onclick="openEdit()">✏️ Edit</button>`
     :`<button class="btn-fol${isFol?' ing':''}" id="fb-${accId}" onclick="toggleFol('${accId}',${isFol})">${isFol?'✓ Following':'+ Follow'}</button>`;
   el.innerHTML=`
     <div style="position:relative">
