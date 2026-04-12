@@ -1,0 +1,2444 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>Car Paws</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fredoka+One&display=swap" rel="stylesheet"/>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --b0:#F0F8FF;--b1:#E5F0FA;--b2:#D1E8FC;--b3:#BDE0FE;--b4:#A2D2FF;--b5:#8FC9FF;
+  --ac:#5BA4D4;--ac2:#3D8CC4;
+  --tx:#1A2E42;--tx2:#4A6A85;--tx3:#8AAEC8;
+  --card:#fff;--border:#D1E8FC;
+  --sh:0 2px 20px rgba(91,164,212,.10);
+  --r:20px;--nav:66px;--font:'Plus Jakarta Sans',sans-serif;
+}
+[data-theme="dark"]{
+  --b0:#0f1923;--b1:#162030;--b2:#1c2d40;--b3:#243650;--b4:#2d4a6e;--b5:#3a5f8a;
+  --ac:#5BA4D4;--ac2:#7ec8f0;
+  --tx:#e8f4fd;--tx2:#9bb8d0;--tx3:#5a7a95;
+  --card:#162030;--border:#1c2d40;
+  --sh:0 2px 20px rgba(0,0,0,.35);
+}
+[data-theme="dark"] .auth-card,[data-theme="dark"] .sheet,[data-theme="dark"] .post-card,[data-theme="dark"] .pk-item,[data-theme="dark"] .feed-tabs,[data-theme="dark"] .pk-head,[data-theme="dark"] .pk-foot{background:var(--card);border-color:var(--border);}
+[data-theme="dark"] .inp,[data-theme="dark"] .efi,[data-theme="dark"] .cmt-inp,[data-theme="dark"] .expl-inp,[data-theme="dark"] .cta{background:var(--b1);border-color:var(--border);color:var(--tx);}
+[data-theme="dark"] #auth{background:linear-gradient(160deg,var(--b0) 0%,var(--b2) 100%);}
+[data-theme="dark"] .screen,[data-theme="dark"] #picker,[data-theme="dark"] #pd{background:var(--b0);}
+[data-theme="dark"] .topbar{background:rgba(15,25,35,.92);}
+[data-theme="dark"] .bottom-nav{background:rgba(22,32,48,.95);}
+[data-theme="dark"] .prof-cover{background:linear-gradient(135deg,var(--b3),var(--b5));}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:var(--font);background:var(--b0);color:var(--tx);font-size:15px;}
+
+#splash{position:fixed;inset:0;background:linear-gradient(160deg,var(--b2) 0%,var(--b4) 60%,var(--b5) 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .5s;}
+#splash.out{opacity:0;pointer-events:none;}
+.sp-logo{width:88px;height:88px;border-radius:26px;box-shadow:0 12px 40px rgba(91,164,212,.35);margin-bottom:20px;animation:float 2s ease-in-out infinite;}
+.sp-name{font-family:'Fredoka One',cursive;font-size:2.4rem;color:#fff;text-shadow:0 2px 12px rgba(61,140,196,.3);}
+.sp-sub{font-size:.88rem;color:rgba(255,255,255,.82);margin-top:6px;}
+.sp-dots{display:flex;gap:7px;margin-top:32px;}
+.sp-dots span{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.5);animation:dp 1.2s ease infinite;}
+.sp-dots span:nth-child(2){animation-delay:.2s;}
+.sp-dots span:nth-child(3){animation-delay:.4s;}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes dp{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}
+
+#auth{position:fixed;inset:0;background:linear-gradient(160deg,var(--b1) 0%,var(--b3) 100%);display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;overflow-y:auto;}
+.auth-top{display:flex;flex-direction:column;align-items:center;margin-bottom:28px;}
+.auth-logo{width:68px;height:68px;border-radius:20px;box-shadow:0 8px 28px rgba(91,164,212,.25);margin-bottom:12px;}
+.auth-brand{font-family:'Fredoka One',cursive;font-size:1.9rem;color:var(--ac2);}
+.auth-sub{font-size:.84rem;color:var(--tx2);margin-top:3px;text-align:center;}
+.auth-card{background:#fff;border-radius:24px;padding:24px;width:100%;max-width:380px;box-shadow:0 8px 40px rgba(91,164,212,.14);}
+.auth-tabs{display:flex;background:var(--b1);border-radius:14px;padding:4px;margin-bottom:22px;}
+.atab{flex:1;padding:10px;border:none;border-radius:11px;font-family:var(--font);font-weight:700;font-size:.88rem;cursor:pointer;background:transparent;color:var(--tx2);transition:.2s;}
+.atab.on{background:#fff;color:var(--ac2);box-shadow:0 2px 8px rgba(91,164,212,.15);}
+.inp{width:100%;padding:12px 15px;border:2px solid var(--border);border-radius:13px;font-family:var(--font);font-size:.92rem;color:var(--tx);outline:none;background:var(--b0);margin-bottom:12px;transition:.2s;}
+.inp:focus{border-color:var(--b5);background:#fff;}
+.lbl{display:block;font-size:.74rem;font-weight:700;color:var(--tx2);margin-bottom:5px;letter-spacing:.3px;text-transform:uppercase;}
+.btn-main{width:100%;padding:13px;background:linear-gradient(135deg,var(--b4),var(--ac));border:none;border-radius:13px;font-family:var(--font);font-weight:800;font-size:.95rem;color:#fff;cursor:pointer;box-shadow:0 4px 16px rgba(91,164,212,.3);transition:.15s;}
+.btn-main:active{transform:scale(.97);}
+.auth-err{font-size:.8rem;color:#e05;text-align:center;margin-top:10px;min-height:16px;}
+.tg-note{font-size:.8rem;color:var(--tx3);text-align:center;margin:12px 0 4px;}
+
+#picker{position:fixed;inset:0;background:var(--b0);z-index:980;display:none;flex-direction:column;}
+.pk-head{padding:20px 18px 14px;background:#fff;border-bottom:1.5px solid var(--border);display:flex;align-items:center;gap:12px;}
+.pk-logo{width:36px;height:36px;border-radius:11px;}
+.pk-title{font-family:'Fredoka One',cursive;font-size:1.25rem;color:var(--ac2);}
+.pk-sub{font-size:.78rem;color:var(--tx2);margin-top:1px;}
+.pk-body{flex:1;overflow-y:auto;padding:14px;}
+.pk-sec{font-size:.72rem;font-weight:800;color:var(--tx3);letter-spacing:.5px;text-transform:uppercase;padding:8px 4px 6px;margin-top:4px;}
+.pk-item{background:#fff;border-radius:18px;padding:14px 16px;display:flex;align-items:center;gap:13px;margin-bottom:10px;border:2px solid var(--border);cursor:pointer;transition:.15s;position:relative;}
+.pk-item:active{transform:scale(.98);}
+.pk-item.sel{border-color:var(--b4);background:var(--b1);}
+.pk-ava{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--b3),var(--b5));display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;overflow:hidden;}
+.pk-ava img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.pk-info{flex:1;min-width:0;}
+.pk-name{font-weight:800;font-size:.94rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pk-handle{font-size:.78rem;color:var(--tx2);margin-top:1px;}
+.pk-badge{display:inline-flex;align-items:center;font-size:.69rem;padding:3px 8px;border-radius:20px;background:var(--b2);color:var(--ac2);font-weight:700;margin-top:4px;}
+.pk-chk{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:22px;height:22px;border-radius:50%;background:var(--b4);display:flex;align-items:center;justify-content:center;font-size:.75rem;color:#fff;}
+.pk-add{border-style:dashed;border-color:var(--b4);background:var(--b1);}
+.pk-foot{padding:14px 18px;background:#fff;border-top:1.5px solid var(--border);}
+
+#app{position:fixed;inset:0;display:none;flex-direction:column;background:var(--b0);}
+.topbar{background:rgba(240,248,255,.92);backdrop-filter:blur(12px);border-bottom:1.5px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;z-index:100;}
+.tb-logo{width:30px;height:30px;border-radius:9px;}
+.tb-title{font-family:'Fredoka One',cursive;font-size:1.2rem;color:var(--ac2);flex:1;}
+.tb-ava{width:33px;height:33px;border-radius:50%;background:linear-gradient(135deg,var(--b3),var(--b5));display:flex;align-items:center;justify-content:center;font-size:.95rem;cursor:pointer;border:2.5px solid var(--b4);overflow:hidden;flex-shrink:0;}
+.tb-ava img{width:100%;height:100%;object-fit:cover;}
+
+.screens{flex:1;overflow:hidden;position:relative;}
+.screen{position:absolute;inset:0;overflow-y:auto;display:none;background:var(--b0);}
+.screen.on{display:block;}
+
+.feed-tabs{display:flex;background:#fff;border-bottom:1.5px solid var(--border);position:sticky;top:0;z-index:10;}
+.ftab{flex:1;padding:13px 8px;text-align:center;font-weight:700;font-size:.86rem;color:var(--tx2);border:none;background:none;cursor:pointer;border-bottom:2.5px solid transparent;transition:.2s;}
+.ftab.on{color:var(--ac);border-bottom-color:var(--ac);}
+
+.post-card{background:#fff;border-bottom:1.5px solid var(--b1);padding:15px 16px;cursor:pointer;transition:.1s;}
+.post-card:active{background:var(--b0);}
+.pc-row{display:flex;gap:11px;}
+.pc-ava{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--b3),var(--b5));display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;overflow:hidden;cursor:pointer;}
+.pc-ava img{width:100%;height:100%;object-fit:cover;}
+.pc-body{flex:1;min-width:0;}
+.pc-top{display:flex;align-items:baseline;gap:5px;flex-wrap:wrap;}
+.pc-name{font-weight:800;font-size:.9rem;}
+.pc-handle{font-size:.76rem;color:var(--tx3);}
+.pc-time{font-size:.73rem;color:var(--tx3);}
+.pc-txt{font-size:.9rem;line-height:1.58;margin-top:5px;color:var(--tx);word-break:break-word;}
+.pc-media{margin-top:10px;border-radius:14px;overflow:hidden;max-height:300px;background:var(--b1);}
+.pc-media img{width:100%;display:block;object-fit:cover;max-height:300px;}
+.pc-media video{width:100%;display:block;max-height:300px;}
+.pc-acts{display:flex;margin-top:10px;}
+.pca{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 0;border:none;background:none;font-family:var(--font);font-size:.78rem;font-weight:600;color:var(--tx3);cursor:pointer;border-radius:10px;transition:.15s;}
+.pca:active{background:var(--b1);}
+.pca.liked{color:#FF6B8A;}
+.pca svg{width:17px;height:17px;}
+.ptag{display:inline-flex;align-items:center;font-size:.67rem;padding:2px 7px;border-radius:20px;background:var(--b2);color:var(--ac2);font-weight:700;margin-left:3px;vertical-align:middle;}
+
+.fab{position:fixed;bottom:calc(var(--nav)+14px);right:16px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--b4),var(--ac));border:none;color:#fff;font-size:1.4rem;cursor:pointer;box-shadow:0 6px 20px rgba(91,164,212,.4);z-index:200;display:flex;align-items:center;justify-content:center;transition:.15s;}
+.fab:active{transform:scale(.91);}
+
+.bottom-nav{height:var(--nav);background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border-top:1.5px solid var(--border);display:flex;flex-shrink:0;z-index:100;}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:none;font-family:var(--font);font-size:.62rem;font-weight:700;color:var(--tx3);cursor:pointer;position:relative;}
+.nb.on{color:var(--ac);}
+.nb svg{width:22px;height:22px;}
+.npip{position:absolute;top:10px;right:calc(50% - 14px);width:7px;height:7px;border-radius:50%;background:#FF6B8A;border:2px solid #fff;display:none;}
+.npip.show{display:block;}
+
+.overlay{position:fixed;inset:0;background:rgba(26,46,66,.35);z-index:500;display:none;align-items:flex-end;backdrop-filter:blur(3px);}
+.overlay.show{display:flex;}
+.sheet{background:#fff;border-radius:26px 26px 0 0;width:100%;max-height:94vh;overflow-y:auto;animation:su .28s cubic-bezier(.32,1,.45,1);}
+@keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sh-hdl{width:38px;height:4px;border-radius:2px;background:var(--b3);margin:12px auto 0;}
+.sh-ttl{font-family:'Fredoka One',cursive;font-size:1.15rem;color:var(--tx);padding:14px 18px 0;}
+.sh-close{position:absolute;right:14px;top:12px;background:var(--b1);border:none;width:30px;height:30px;border-radius:50%;font-size:1rem;cursor:pointer;color:var(--tx2);display:flex;align-items:center;justify-content:center;}
+
+.cw{padding:14px 16px;}
+.cw-who{display:flex;align-items:center;gap:11px;padding-bottom:13px;border-bottom:1.5px solid var(--b1);margin-bottom:12px;}
+.cw-ava{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--b3),var(--b5));display:flex;align-items:center;justify-content:center;font-size:1.1rem;overflow:hidden;flex-shrink:0;}
+.cw-ava img{width:100%;height:100%;object-fit:cover;}
+.cw-name{font-weight:800;font-size:.9rem;}
+.cw-handle{font-size:.75rem;color:var(--tx2);margin-top:1px;}
+.cta{width:100%;min-height:100px;border:none;outline:none;font-family:var(--font);font-size:.94rem;color:var(--tx);resize:none;line-height:1.6;background:transparent;}
+.cmprev{margin-top:10px;border-radius:13px;overflow:hidden;position:relative;}
+.cmprev img,.cmprev video{width:100%;max-height:200px;object-fit:cover;display:block;}
+.rm-m{position:absolute;top:6px;right:6px;background:rgba(26,46,66,.55);color:#fff;border:none;border-radius:50%;width:26px;height:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.cbar{display:flex;align-items:center;gap:8px;padding-top:10px;border-top:1.5px solid var(--b1);margin-top:8px;}
+.cbar-t{background:none;border:none;color:var(--ac);font-size:1.15rem;cursor:pointer;padding:6px;border-radius:9px;}
+.cbar-t:active{background:var(--b1);}
+.char-c{margin-left:auto;font-size:.78rem;color:var(--tx3);font-weight:700;}
+.post-btn{background:linear-gradient(135deg,var(--b4),var(--ac));border:none;border-radius:20px;padding:9px 22px;color:#fff;font-family:var(--font);font-weight:800;font-size:.88rem;cursor:pointer;}
+.post-btn:disabled{opacity:.45;}
+
+.ef{padding:0 18px 14px;}
+.efl{font-size:.73rem;font-weight:800;color:var(--tx2);margin-bottom:5px;letter-spacing:.4px;text-transform:uppercase;}
+.efi{width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:13px;font-family:var(--font);font-size:.9rem;color:var(--tx);outline:none;background:var(--b0);transition:.2s;}
+.efi:focus{border-color:var(--b5);background:#fff;}
+.ef-ava-w{display:flex;flex-direction:column;align-items:center;padding:18px 0 14px;}
+.ef-ava{width:78px;height:78px;border-radius:50%;background:linear-gradient(135deg,var(--b3),var(--b5));display:flex;align-items:center;justify-content:center;font-size:2rem;position:relative;overflow:hidden;cursor:pointer;border:3px solid var(--b3);}
+.ef-ava img{width:100%;height:100%;object-fit:cover;}
+.ef-ov{position:absolute;inset:0;background:rgba(26,46,66,.35);display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:#fff;}
+
+.si{display:flex;align-items:center;gap:13px;padding:14px 18px;border-bottom:1px solid var(--b1);cursor:pointer;transition:.15s;}
+.si:active{background:var(--b0);}
+.si-ico{font-size:1.2rem;width:30px;text-align:center;}
+.si-lbl{font-weight:700;font-size:.9rem;}
+.si-sub{font-size:.76rem;color:var(--tx2);margin-top:1px;}
+
+#pd{position:fixed;inset:0;background:var(--b0);z-index:480;display:none;flex-direction:column;height:100%;}
+.pd-top{display:flex;align-items:center;gap:10px;padding:12px 16px;background:#fff;border-bottom:1.5px solid var(--border);flex-shrink:0;}
+.back{background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--tx);padding:2px 6px;}
+.pd-ttl{font-family:'Fredoka One',cursive;font-size:1.1rem;color:var(--tx);}
+.pd-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.pd-main{padding:16px;border-bottom:1.5px solid var(--b1);}
+.pd-head{display:flex;align-items:center;gap:11px;margin-bottom:13px;}
+.pd-ava{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--b3),var(--b5));display:flex;align-items:center;justify-content:center;font-size:1.3rem;overflow:hidden;cursor:pointer;flex-shrink:0;}
+.pd-ava img{width:100%;height:100%;object-fit:cover;}
+.pd-txt{font-size:.97rem;line-height:1.65;color:var(--tx);margin-bottom:12px;word-break:break-word;}
+.pd-ts{font-size:.77rem;color:var(--tx3);padding:10px 0;border-top:1px solid var(--b1);border-bottom:1px solid var(--b1);margin-bottom:4px;}
+.pd-stats{display:flex;gap:18px;padding:10px 0;border-bottom:1.5px solid var(--b1);}
+.pd-stat{font-size:.84rem;color:var(--tx2);}
+.pd-stat b{color:var(--tx);}
+.pd-acts{display:flex;}
+.pda{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:9px;border:none;background:none;font-family:var(--font);font-size:.8rem;font-weight:600;color:var(--tx3);cursor:pointer;border-radius:10px;transition:.15s;}
+.pda:active{background:var(--b1);}
+.pda.liked{color:#FF6B8A;}
+.pda svg{width:18px;height:18px;}
+.cmts-lbl{font-family:'Fredoka One',cursive;font-size:.95rem;color:var(--tx);padding:13px 16px 4px;}
+.cmt{display:flex;gap:10px;padding:12px 16px;border-bottom:1px solid var(--b1);}
+.cmt-ava{width:35px;height:35px;border-radius:50%;background:linear-gradient(135deg,var(--b3),var(--b5));display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0;overflow:hidden;cursor:pointer;}
+.cmt-ava img{width:100%;height:100%;object-fit:cover;}
+.cmt-name{font-weight:800;font-size:.84rem;}
+.cmt-txt{font-size:.84rem;line-height:1.5;margin-top:2px;}
+.cmt-ts{font-size:.72rem;color:var(--tx3);margin-top:3px;}
+.cmt-bar{padding:10px 14px;background:#fff;border-top:1.5px solid var(--border);display:flex;gap:9px;align-items:center;flex-shrink:0;}
+.cmt-inp{flex:1;padding:9px 14px;border:2px solid var(--border);border-radius:20px;font-family:var(--font);font-size:.87rem;outline:none;background:var(--b0);}
+.cmt-inp:focus{border-color:var(--b5);}
+.cmt-send{background:linear-gradient(135deg,var(--b4),var(--ac));border:none;border-radius:50%;width:36px;height:36px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.95rem;}
+
+.expl-s{padding:12px 16px;background:#fff;border-bottom:1.5px solid var(--border);position:sticky;top:0;z-index:10;}
+.expl-inp{width:100%;padding:10px 15px;border:2px solid var(--border);border-radius:20px;font-family:var(--font);font-size:.9rem;outline:none;background:var(--b0);}
+.expl-inp:focus{border-color:var(--b5);}
+.sec-lbl{font-family:'Fredoka One',cursive;font-size:1rem;color:var(--tx);padding:14px 16px 6px;}
+
+.prof-cover{height:110px;background:linear-gradient(135deg,var(--b3),var(--b5));}
+.prof-ava-w{position:absolute;bottom:-34px;left:16px;width:70px;height:70px;border-radius:50%;border:3px solid #fff;background:linear-gradient(135deg,var(--b3),var(--b5));overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:1.9rem;}
+.prof-ava-w img{width:100%;height:100%;object-fit:cover;}
+.prof-info{padding:42px 16px 14px;border-bottom:1.5px solid var(--b1);}
+.prof-name{font-family:'Fredoka One',cursive;font-size:1.25rem;}
+.prof-handle{font-size:.82rem;color:var(--tx2);margin-top:1px;}
+.prof-bio{font-size:.86rem;margin-top:8px;line-height:1.55;}
+.prof-stats{display:flex;gap:22px;margin-top:12px;}
+.ps-n{font-weight:900;font-size:1rem;}
+.ps-l{font-size:.71rem;color:var(--tx2);}
+.prof-acts{display:flex;gap:8px;margin-top:13px;}
+.btn-out{flex:1;padding:9px;border:2px solid var(--border);border-radius:20px;background:none;font-family:var(--font);font-weight:700;font-size:.84rem;color:var(--tx);cursor:pointer;}
+.btn-out:active{background:var(--b1);}
+.btn-fol{flex:1;padding:9px;border:none;border-radius:20px;background:linear-gradient(135deg,var(--b4),var(--ac));font-family:var(--font);font-weight:800;font-size:.84rem;color:#fff;cursor:pointer;}
+.btn-fol.ing{background:none;border:2px solid var(--border);color:var(--tx);}
+
+
+.prof-tabs{display:flex;background:#fff;border-bottom:1.5px solid var(--border);position:sticky;top:0;z-index:5;}
+.ptab{flex:1;padding:12px 6px;text-align:center;font-weight:700;font-size:.82rem;color:var(--tx2);border:none;background:none;cursor:pointer;border-bottom:2.5px solid transparent;transition:.2s;}
+.ptab.on{color:var(--ac);border-bottom-color:var(--ac);}
+.friend-badge{display:inline-flex;align-items:center;font-size:.68rem;padding:2px 8px;border-radius:20px;background:#e8f5e9;color:#2e7d32;font-weight:700;margin-left:6px;}
+.un-manage{display:flex;align-items:center;gap:8px;background:var(--b0);border:1.5px solid var(--border);border-radius:12px;padding:10px 13px;margin-bottom:8px;}
+.un-val{flex:1;font-weight:700;font-size:.9rem;}
+.un-del{background:none;border:none;color:#e03;font-size:1rem;cursor:pointer;padding:4px 8px;border-radius:8px;}
+.un-del:active{background:#fff0f0;}
+.login-recover{background:var(--b1);border-radius:16px;padding:16px;margin-top:14px;text-align:center;}
+
+
+.dm-pip{position:absolute;top:8px;right:calc(50% - 16px);width:7px;height:7px;border-radius:50%;background:#FF6B8A;border:2px solid #fff;display:none;}
+.dm-pip.show{display:block;}
+.bm-btn.active svg{fill:var(--ac);}
+.stk-picker{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1.5px solid var(--border);z-index:600;max-height:55vh;display:none;flex-direction:column;}
+.stk-picker.show{display:flex;}
+.stk-pack-tabs{display:flex;overflow-x:auto;gap:6px;padding:10px 12px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.stk-pack-tab{flex-shrink:0;padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);font-size:.78rem;font-weight:700;cursor:pointer;background:none;color:var(--tx2);}
+.stk-pack-tab.on{background:var(--b2);color:var(--ac2);border-color:var(--b4);}
+.stk-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:10px 12px;overflow-y:auto;}
+.stk-item{aspect-ratio:1;border-radius:12px;overflow:hidden;cursor:pointer;background:var(--b1);display:flex;align-items:center;justify-content:center;}
+.stk-item img{width:100%;height:100%;object-fit:cover;}
+.stk-item:active{transform:scale(.93);}
+.dm-screen{position:fixed;inset:0;background:var(--b0);z-index:490;display:none;flex-direction:column;}
+.dm-top{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--card);border-bottom:1.5px solid var(--border);flex-shrink:0;}
+.dm-list-item{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--b1);cursor:pointer;}
+.dm-list-item:active{background:var(--b1);}
+.dm-list-item.unread{background:var(--b1);}
+.dm-msg{display:flex;margin-bottom:10px;gap:8px;}
+.dm-msg.mine{flex-direction:row-reverse;}
+.dm-bubble{max-width:72%;padding:10px 13px;border-radius:18px;font-size:.88rem;line-height:1.55;word-break:break-word;}
+.dm-bubble.theirs{background:var(--card);border:1.5px solid var(--border);border-radius:18px 18px 18px 4px;}
+.dm-bubble.mine{background:linear-gradient(135deg,var(--b4),var(--ac));color:#fff;border-radius:18px 18px 4px 18px;}
+.dm-sticker{width:120px;height:120px;border-radius:14px;overflow:hidden;cursor:pointer;}
+.dm-sticker img{width:100%;height:100%;object-fit:cover;}
+.dm-input-bar{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--card);border-top:1.5px solid var(--border);flex-shrink:0;}
+.dm-inp{flex:1;padding:9px 14px;border:2px solid var(--border);border-radius:20px;font-family:var(--font);font-size:.87rem;outline:none;background:var(--b0);color:var(--tx);}
+.dm-inp:focus{border-color:var(--b5);}
+.friend-tag{display:inline-flex;align-items:center;font-size:.65rem;padding:1px 6px;border-radius:10px;background:#e8f5e9;color:#2e7d32;font-weight:700;margin-left:4px;vertical-align:middle;}
+
+.ni{display:flex;align-items:flex-start;gap:11px;padding:14px 16px;border-bottom:1.5px solid var(--b1);cursor:pointer;}
+.ni.unread{background:var(--b1);}
+.ni-ico{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--b3),var(--b5));display:flex;align-items:center;justify-content:center;font-size:1.05rem;flex-shrink:0;}
+.ni-tx{font-size:.84rem;line-height:1.5;}
+.ni-ts{font-size:.72rem;color:var(--tx3);margin-top:3px;}
+
+.psc{background:var(--b0);border:2px solid var(--border);border-radius:16px;padding:13px 15px;display:flex;align-items:center;gap:12px;margin-bottom:10px;cursor:pointer;transition:.15s;}
+.psc:active{transform:scale(.98);}
+.psc.sel{border-color:var(--b4);background:var(--b1);}
+.psc-em{font-size:1.8rem;width:44px;text-align:center;}
+.psc-info{flex:1;}
+.psc-name{font-weight:800;font-size:.9rem;}
+.psc-type{font-size:.76rem;color:var(--tx2);margin-top:2px;}
+.psc-chk{width:22px;height:22px;border-radius:50%;border:2px solid var(--b3);display:flex;align-items:center;justify-content:center;font-size:.75rem;}
+.psc-chk.chk{background:var(--b4);border-color:var(--b4);color:#fff;}
+.acc-info{background:var(--b1);border-radius:14px;padding:13px;margin:14px 18px;font-size:.84rem;color:var(--tx2);line-height:1.6;}
+
+.ld{display:flex;gap:7px;justify-content:center;padding:30px;}
+.ld span{width:8px;height:8px;border-radius:50%;background:var(--b4);animation:dp 1.1s ease infinite;}
+.ld span:nth-child(2){animation-delay:.18s;}
+.ld span:nth-child(3){animation-delay:.36s;}
+.emp{text-align:center;padding:44px 20px;color:var(--tx2);}
+.emp-i{font-size:3rem;margin-bottom:12px;}
+.emp-t{font-family:'Fredoka One',cursive;font-size:1.1rem;color:var(--tx);margin-bottom:6px;}
+.emp-s{font-size:.83rem;}
+#toast{position:fixed;bottom:calc(var(--nav)+14px);left:50%;transform:translateX(-50%) translateY(12px);background:rgba(26,46,66,.88);color:#fff;padding:10px 20px;border-radius:20px;font-size:.84rem;font-weight:700;z-index:9999;opacity:0;transition:.25s;white-space:nowrap;pointer-events:none;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.hidden{display:none!important;}
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <img src="https://files.catbox.moe/mzuka8.png" class="sp-logo"/>
+  <div class="sp-name">Car Paws</div>
+  <div class="sp-sub">Social media untuk pet 🐾</div>
+  <div class="sp-dots"><span></span><span></span><span></span></div>
+</div>
+
+<!-- Screen: harus buka dari Telegram -->
+<div id="no-tg" style="display:none;position:fixed;inset:0;background:linear-gradient(160deg,var(--b1) 0%,var(--b3) 100%);flex-direction:column;align-items:center;justify-content:center;padding:28px;text-align:center;">
+  <div style="font-size:3.5rem;margin-bottom:16px">🐾</div>
+  <div style="font-family:'Fredoka One',cursive;font-size:1.6rem;color:var(--ac2);margin-bottom:10px">Car Paws</div>
+  <div style="font-size:.9rem;color:var(--tx2);line-height:1.6">Buka Car Paws melalui<br><b style="color:var(--ac2)">bot Telegram</b> ya~<br><br>Ketik <b>/carpaws</b> di @carpetsrobot</div>
+</div>
+
+<!-- Screen: akun baru first time -->
+<div id="reg-screen" style="display:none;position:fixed;inset:0;background:linear-gradient(160deg,var(--b1) 0%,var(--b3) 100%);flex-direction:column;align-items:center;justify-content:center;padding:24px;overflow-y:auto;">
+  <div style="background:#fff;border-radius:24px;padding:26px;width:100%;max-width:380px;box-shadow:0 8px 40px rgba(91,164,212,.14);text-align:center;">
+    <div style="font-size:2.5rem;margin-bottom:8px">🐾</div>
+    <div style="font-family:'Fredoka One',cursive;font-size:1.4rem;color:var(--ac2);margin-bottom:4px">Selamat datang!</div>
+    <div id="reg-name" style="font-size:.9rem;font-weight:700;color:var(--tx);margin-bottom:16px"></div>
+
+    <!-- Tab switch -->
+    <div style="display:flex;background:var(--b1);border-radius:14px;padding:4px;margin-bottom:18px;gap:4px;">
+      <button id="rtab-new" onclick="switchRegTab('new')" style="flex:1;padding:9px;border:none;border-radius:11px;font-family:var(--font);font-weight:700;font-size:.85rem;cursor:pointer;background:#fff;color:var(--ac2);box-shadow:0 2px 8px rgba(91,164,212,.15);">✨ Buat Baru</button>
+      <button id="rtab-join" onclick="switchRegTab('join')" style="flex:1;padding:9px;border:none;border-radius:11px;font-family:var(--font);font-weight:700;font-size:.85rem;cursor:pointer;background:transparent;color:var(--tx2);">🔗 Join Akun Pet</button>
+    </div>
+
+    <!-- Tab: Buat Baru -->
+    <div id="reg-tab-new">
+      <div style="background:var(--b1);border-radius:14px;padding:13px;margin-bottom:16px;font-size:.83rem;color:var(--tx2);text-align:left;line-height:1.7">
+        💰 Biaya: <b style="color:var(--ac2)">500 🪙</b> dari Carpet Shop<br>
+        🐾 Terhubung ke akun Carpet Shop kamu<br>
+        ✨ Post, follow, dan banyak lagi!
+      </div>
+      <div id="reg-err" style="font-size:.8rem;color:#e05;margin-bottom:10px;min-height:16px"></div>
+      <button class="btn-main" id="reg-btn" onclick="doRegisterTG()">Daftar & Bayar 500 🪙</button>
+      <div style="font-size:.76rem;color:var(--tx3);margin-top:10px">Koin dipotong dari Carpet Shop kamu</div>
+    </div>
+
+    <!-- Tab: Join Akun Pet -->
+    <div id="reg-tab-join" style="display:none">
+      <div style="background:var(--b1);border-radius:14px;padding:13px;margin-bottom:16px;font-size:.83rem;color:var(--tx2);text-align:left;line-height:1.7">
+        🔗 Masukkan username akun pet yang sudah dibuat partnermu.<br>
+        Partner harus sudah share akses ke Telegram ID kamu dulu.
+      </div>
+      <input class="efi" id="join-username" placeholder="@username akun pet" style="width:100%;margin-bottom:12px;text-align:left;"/>
+      <div id="join-err" style="font-size:.8rem;color:#e05;margin-bottom:10px;min-height:16px"></div>
+      <button class="btn-main" onclick="doJoinPet()">Gabung ke Akun Pet 🐾</button>
+    </div>
+  </div>
+</div>
+
+<div id="picker">
+  <div class="pk-head">
+    <img src="https://files.catbox.moe/mzuka8.png" class="pk-logo"/>
+    <div><div class="pk-title">Pilih Akun</div><div class="pk-sub">Mau posting sebagai siapa?</div></div>
+  </div>
+  <div class="pk-body" id="pk-body"></div>
+  <div class="pk-foot"><button class="btn-main" onclick="confirmPick()">Lanjut ✨</button></div>
+</div>
+
+<div id="app">
+  <div class="topbar">
+    <img src="https://files.catbox.moe/mzuka8.png" class="tb-logo"/>
+    <div class="tb-title">Car Paws</div>
+    <div class="tb-ava" id="tb-ava" onclick="openSettings()">🐾</div>
+  </div>
+  <div class="screens">
+    <div class="screen on" id="s-home">
+      <div class="feed-tabs">
+        <button class="ftab on" onclick="switchFeed('all',this)">Semua</button>
+        <button class="ftab" onclick="switchFeed('following',this)">Following</button>
+        <button class="ftab" onclick="switchFeed('pets',this)">🐾 Pet</button>
+      </div>
+      <div id="fw"></div>
+    </div>
+    <div class="screen" id="s-explore">
+      <div class="expl-s"><input class="expl-inp" id="ei" placeholder="🔍 Cari akun, postingan..." oninput="doSearch(this.value)"/></div>
+      <div id="ew"></div>
+    </div>
+    <div class="screen" id="s-notif"><div id="nw"></div></div>
+    <div class="screen" id="s-profile"><div id="prw"></div></div>
+  </div>
+  <nav class="bottom-nav">
+    <button class="nb on" id="nb-home" onclick="goS('home')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Beranda
+    </button>
+    <button class="nb" id="nb-explore" onclick="goS('explore')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>Jelajahi
+    </button>
+    <button class="nb" id="nb-notif" onclick="goS('notif')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>Notif
+      <div class="npip" id="npip"></div>
+    </button>
+    <button class="nb" id="nb-dm" onclick="openDMList()">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>DM
+      <div class="dm-pip" id="dm-pip"></div>
+    </button>
+    <button class="nb" id="nb-profile" onclick="goS('profile')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>Profil
+    </button>
+  </nav>
+  <button class="fab" onclick="openCompose()">✍️</button>
+</div>
+
+<div id="pd">
+  <div class="pd-top">
+    <button class="back" onclick="closePD()">←</button>
+    <div class="pd-ttl">Postingan</div>
+  </div>
+  <div class="pd-scroll" id="pds"></div>
+  <div class="cmt-bar">
+    <div class="cmt-ava" id="ca" style="width:32px;height:32px;font-size:.9rem;">🐾</div>
+    <button onclick="openStkFor('cmt')" style="background:none;border:none;font-size:1.2rem;cursor:pointer;padding:4px;flex-shrink:0">🎨</button>
+    <input class="cmt-inp" id="ci" placeholder="Tulis komentar..." maxlength="280"/>
+    <button class="cmt-send" onclick="sendCmt()">➤</button>
+  </div>
+</div>
+
+<div class="overlay" id="ov-c" onclick="ovc(event,'ov-c')">
+  <div class="sheet" style="position:relative">
+    <div class="sh-hdl"></div>
+    <div class="sh-ttl">Buat Postingan</div>
+    <button class="sh-close" onclick="xov('ov-c')">✕</button>
+    <div class="cw">
+      <div class="cw-who">
+        <div class="cw-ava" id="cwa">🐾</div>
+        <div><div class="cw-name" id="cwn">-</div><div class="cw-handle" id="cwh">-</div></div>
+      </div>
+      <textarea class="cta" id="ct" placeholder="Ada apa hari ini? 🐾" maxlength="500" oninput="cc()"></textarea>
+      <div id="cpv" class="hidden"></div>
+      <div class="cbar">
+        <button class="cbar-t" onclick="document.getElementById('cf').click()">🖼️</button>
+        <button class="cbar-t" onclick="openStkFor('post')">🎨</button>
+        <span class="char-c" id="ccc">0/500</span>
+        <button class="post-btn" id="pb" onclick="submitPost()">Post 🐾</button>
+      </div>
+      <input type="file" id="cf" accept="image/*,video/*" style="display:none" onchange="handleMedia(this)"/>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="ov-s" onclick="ovc(event,'ov-s')">
+  <div class="sheet" style="position:relative">
+    <div class="sh-hdl"></div>
+    <div class="sh-ttl">Menu</div>
+    <button class="sh-close" onclick="xov('ov-s')">✕</button>
+    <div style="margin-top:14px">
+      <div class="si" onclick="openEdit()"><div class="si-ico">✏️</div><div><div class="si-lbl">Edit Profil</div><div class="si-sub">Nama, bio, foto profil</div></div></div>
+      <div class="si" onclick="buyVerified()"><div class="si-ico" style="color:#1d9bf0">✔</div><div><div class="si-lbl" id="btn-buy-verified">Verified (2.000 🪙)</div><div class="si-sub">Post selalu di FYP</div></div></div>
+      <div class="si" onclick="openBuyUsername()"><div class="si-ico">🏷️</div><div><div class="si-lbl">Tambah Username (2.000 🪙)</div><div class="si-sub">Punya username tambahan di profil kamu</div></div></div>
+      <div class="si" onclick="xov('ov-s');openManageUsername()"><div class="si-ico">✏️</div><div><div class="si-lbl">Kelola Username</div><div class="si-sub">Hapus atau lihat username kamu</div></div></div>
+      <div class="si" onclick="xov('ov-s');showPicker()"><div class="si-ico">🔄</div><div><div class="si-lbl">Ganti Akun</div><div class="si-sub">Switch ke akun lain</div></div></div>
+      <div class="si" onclick="xov('ov-s');openBuatOwner()"><div class="si-ico">👤</div><div><div class="si-lbl">Buat Akun Owner</div><div class="si-sub">Buat akun atas nama kamu sendiri</div></div></div>
+      <div class="si" onclick="xov('ov-s');addPetAccount()"><div class="si-ico">🐾</div><div><div class="si-lbl">Tambah Akun Pet</div><div class="si-sub">Hubungkan pet dari Carpet Shop</div></div></div>
+      <div class="si" onclick="xov('ov-s');openSharePet()"><div class="si-ico">🔗</div><div><div class="si-lbl">Share Akun Pet ke Partner</div><div class="si-sub">Beri akses partner ke akun petmu</div></div></div>
+      <div class="si" onclick="openBookmarks()"><div class="si-ico">🔖</div><div><div class="si-lbl">Bookmark</div><div class="si-sub">Postingan yang kamu simpan</div></div></div>
+      <div class="si" onclick="xov('ov-s');openEditHeader()"><div class="si-ico">✏️</div><div><div class="si-lbl">Ganti Header</div><div class="si-sub">Nama dan logo aplikasi</div></div></div>
+      <div class="si" onclick="xov('ov-s');openRecoverAccount()"><div class="si-ico">🔑</div><div><div class="si-lbl">Masuk ke Akun Lain</div><div class="si-sub">Login ke akun yang sudah ada via username</div></div></div>
+      <div class="si" onclick="toggleDarkMode()">
+        <div class="si-ico" id="dm-ico">🌙</div>
+        <div><div class="si-lbl" id="dm-lbl">Dark Mode</div><div class="si-sub" id="dm-sub">Tampilan gelap</div></div>
+        <div id="dm-toggle" style="width:42px;height:24px;border-radius:12px;background:var(--b3);position:relative;margin-left:auto;transition:.2s;flex-shrink:0">
+          <div id="dm-knob" style="width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:.2s;box-shadow:0 1px 4px rgba(0,0,0,.2)"></div>
+        </div>
+      </div>
+      <div class="si" onclick="doLogout()"><div class="si-ico">🚪</div><div><div class="si-lbl">Keluar dari akun ini</div><div class="si-sub">Kembali ke pilih akun</div></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="ov-e" onclick="ovc(event,'ov-e')">
+  <div class="sheet" style="position:relative">
+    <div class="sh-hdl"></div>
+    <div class="sh-ttl">Edit Profil</div>
+    <button class="sh-close" onclick="xov('ov-e')">✕</button>
+    <div class="ef-ava-w">
+      <div class="ef-ava" id="eav" onclick="document.getElementById('avf').click()">🐾<div class="ef-ov">📷</div></div>
+      <div style="font-size:.74rem;color:var(--tx3);margin-top:7px">Tap untuk ganti foto</div>
+      <input type="file" id="avf" accept="image/*" style="display:none" onchange="handleAv(this)"/>
+    </div>
+    <div class="ef"><div class="efl">Nama Tampilan</div><input class="efi" id="en" maxlength="40"/></div>
+    <div class="ef"><div class="efl">Username</div><input class="efi" id="eu" maxlength="20"/></div>
+    <div class="ef"><div class="efl">Bio</div><textarea class="efi" id="eb" maxlength="160" style="min-height:68px;resize:none"></textarea></div>
+    <div class="ef"><div class="efl">Telegram ID</div><input class="efi" id="etg" type="number" placeholder="ID Telegram kamu (untuk sync pet)"/></div>
+    <div id="extra-usernames" style="display:none">
+      <div class="ef"><div class="efl">Username 2</div><input class="efi" id="eu2" maxlength="20" placeholder="username kedua (opsional)"/></div>
+      <div class="ef"><div class="efl">Username 3</div><input class="efi" id="eu3" maxlength="20" placeholder="username ketiga (opsional)"/></div>
+      <div class="ef"><div class="efl">Username 4</div><input class="efi" id="eu4" maxlength="20" placeholder="username keempat (opsional)"/></div>
+    </div>
+    <div class="ef"><button class="btn-main" onclick="saveProfile()">Simpan ✨</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="ov-p" onclick="ovc(event,'ov-p')">
+  <div class="sheet" style="position:relative">
+    <div class="sh-hdl"></div>
+    <div class="sh-ttl">Tambah Akun Pet 🐾</div>
+    <button class="sh-close" onclick="xov('ov-p')">✕</button>
+    <div class="acc-info">Pilih pet dari Carpet Shop kamu, atau buat manual. Pet yang sudah punya akun Car Paws ditandai ✓.</div>
+    <div id="pc-pets"></div>
+    <div style="padding:4px 18px 4px"><div class="efl">Atau buat manual</div></div>
+    <div class="ef"><div class="efl">Nama Pet</div><input class="efi" id="np-n" placeholder="Nama pet"/></div>
+    <div class="ef"><div class="efl">Username</div><input class="efi" id="np-u" placeholder="username_pet"/></div>
+    <div class="ef"><div class="efl">Emoji</div><input class="efi" id="np-e" placeholder="🐱 🐶 🐰" maxlength="4"/></div>
+    <div class="ef"><button class="btn-main" onclick="createPetAcc()">Buat Akun Pet 🐾</button></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- Sticker Picker -->
+<div class="stk-picker" id="stk-picker">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px 0">
+    <span style="font-family:'Fredoka One',cursive;font-size:1rem;color:var(--tx)">🎨 Stiker</span>
+    <div style="display:flex;gap:8px">
+      <button style="background:linear-gradient(135deg,var(--b4),var(--ac));border:none;border-radius:20px;padding:5px 12px;color:#fff;font-size:.78rem;font-weight:700;cursor:pointer" onclick="openCreateStickerPack()">+ Buat Pack</button>
+      <button style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--tx2)" onclick="closeStk()">✕</button>
+    </div>
+  </div>
+  <div class="stk-pack-tabs" id="stk-tabs"></div>
+  <div class="stk-grid" id="stk-grid"></div>
+</div>
+
+<!-- DM Screen -->
+<div class="dm-screen" id="dm-screen">
+  <div class="dm-top">
+    <button onclick="closeDMScreen()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--tx)">←</button>
+    <div id="dm-screen-ava" style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--b3),var(--b5));display:flex;align-items:center;justify-content:center;font-size:1rem;overflow:hidden;flex-shrink:0"></div>
+    <div style="flex:1">
+      <div id="dm-screen-name" style="font-weight:800;font-size:.95rem"></div>
+      <div id="dm-screen-handle" style="font-size:.75rem;color:var(--tx2)"></div>
+    </div>
+    <button onclick="loadDMMessages(_dmTarget)" style="background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--tx3);padding:4px">🔄</button>
+  </div>
+  <div id="dm-msgs" style="flex:1;overflow-y:auto;padding:14px 12px;"></div>
+  <div class="dm-input-bar">
+    <button onclick="openStkFor('dm')" style="background:none;border:none;font-size:1.3rem;cursor:pointer;padding:4px">🎨</button>
+    <input class="dm-inp" id="dm-inp" placeholder="Pesan..." maxlength="500"/>
+    <button onclick="sendDM()" style="background:linear-gradient(135deg,var(--b4),var(--ac));border:none;border-radius:50%;width:36px;height:36px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.95rem">➤</button>
+  </div>
+</div>
+
+<script>
+window.onerror=function(msg,src,line,col,err){
+  const d=document.getElementById('dbg')||document.createElement('div');
+  d.id='dbg';d.style.cssText='position:fixed;inset:0;background:#1a1a2e;color:#fff;z-index:99999;padding:20px;font-size:13px;overflow-y:auto;font-family:monospace;';
+  d.innerHTML=(d.innerHTML||'')+'<div style="color:#ff6b6b;margin-bottom:8px">❌ '+msg+'<br>Line:'+line+'</div>';
+  document.body.appendChild(d);return false;
+};
+window.onunhandledrejection=function(e){
+  const d=document.getElementById('dbg')||document.createElement('div');
+  d.id='dbg';d.style.cssText='position:fixed;inset:0;background:#1a1a2e;color:#fff;z-index:99999;padding:20px;font-size:13px;overflow-y:auto;font-family:monospace;';
+  d.innerHTML=(d.innerHTML||'')+'<div style="color:#ffa500;margin-bottom:8px">⚠️ '+(e.reason?.message||String(e.reason))+'</div>';
+  document.body.appendChild(d);
+};
+const SB_URL='https://ecscqmpndyyhmimilyir.supabase.co';
+// ⚠️ GANTI INI dengan anon key dari Supabase dashboard (bukan service_role!)
+// Settings → API → Project API keys → anon public
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjc2NxbXBuZHl5aG1pbWlseWlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3Mjk5NTgsImV4cCI6MjA5MTMwNTk1OH0.MMmbqDRg5H2KodnFl6y2Cop-_IBbu-1sWYDfeSnN4K4';
+const db=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false}});
+const PM={cat:'🐱',dog:'🐶',rabbit:'🐰',hamster:'🐹',fox:'🦊',penguin:'🐧',duck:'🦆',frog:'🐸',bear:'🐻',koala:'🐨',capybara:'🦫',axolotl:'🦎',panda:'🐼',unicorn:'🦄',dragon:'🐉',phoenix:'🔥',koi:'🐟',wolf:'🐺',monkey:'🐒',kumiho:'🦊',jellyfish:'🪼',tanuki:'🦝',void_cat:'🌑'};
+const OWNER_TG_ID='8513979925';
+const REG_FEE=500;
+const VERIFIED_FEE=2000;
+const FOLLOWER_REWARDS=[[10,500],[50,1500],[100,3000],[200,4000],[500,6000],[1000,10000],[10000,20000]];
+const LIKE_REWARDS=[[10,100],[100,1000],[1000,5000],[10000,10000]];
+
+let TG_ID=null,TG_NAME=null,TG_USER=null;
+let CU=null,MYA=[],feedTab='all',curS='home',curPID=null,_mf=null,_af=null,_selPet=null,_rt=null;
+// Cache feed supaya gak reload tiap switch tab
+let _feedCache=null,_feedCacheTab=null,_feedCacheTime=0;
+const FEED_CACHE_MS=30000; // 30 detik cache
+const SESS_KEY=()=>'cp_active_'+TG_ID;
+
+function getTGUser(tg){
+  if(tg?.initDataUnsafe?.user?.id){
+    const u=tg.initDataUnsafe.user;
+    return{id:String(u.id),name:u.first_name||u.username||'User',user:u};
+  }
+  if(tg?.initData){
+    try{
+      const params=new URLSearchParams(tg.initData);
+      const u=JSON.parse(decodeURIComponent(params.get('user')||'{}'));
+      if(u.id)return{id:String(u.id),name:u.first_name||u.username||'User',user:u};
+    }catch(e){}
+  }
+  return null;
+}
+
+window.onload=async()=>{
+  await sleep(1600);
+  g('splash').classList.add('out');
+  await sleep(500);
+
+  const tg=window.Telegram?.WebApp;
+  if(tg){tg.ready();tg.expand();}
+
+  // Retry sampai 3x karena kadang WebApp belum siap saat onload
+  let tgUser=null;
+  for(let i=0;i<3;i++){
+    tgUser=getTGUser(tg);
+    if(tgUser)break;
+    await sleep(400);
+  }
+
+  // Fallback URL param (untuk testing)
+  if(!tgUser){
+    const p=new URLSearchParams(location.search);
+    if(p.get('tg_id')){
+      tgUser={id:p.get('tg_id'),name:p.get('tg_name')||'User',user:null};
+    }
+  }
+
+  // Kalau semua gagal = bukan dibuka dari Telegram
+  if(!tgUser){
+    g('splash').classList.remove('out');
+    g('splash').innerHTML=`<div style="text-align:center;padding:32px;color:#fff">
+      <div style="font-size:3rem;margin-bottom:16px">\u26a0\ufe0f</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:1.6rem;margin-bottom:10px">Buka via Telegram</div>
+      <div style="font-size:.9rem;opacity:.85;line-height:1.6">Car Paws harus dibuka<br>melalui bot Telegram,<br>bukan browser biasa.</div>
+    </div>`;
+    g('splash').style.opacity='1';g('splash').style.pointerEvents='auto';
+    return;
+  }
+
+  TG_ID=tgUser.id;TG_NAME=tgUser.name;TG_USER=tgUser.user;
+  initDarkMode();
+  await loadAccs();
+};
+
+async function loadAccs(){
+  // Ambil akun milik sendiri + akun pet yang di-share (owner2_tg_id = TG_ID)
+  const[{data:own},{data:shared}]=await Promise.all([
+    db.from('cp_accounts').select('*').eq('telegram_user_id',TG_ID).order('created_at'),
+    db.from('cp_accounts').select('*').eq('owner2_tg_id',TG_ID).order('created_at'),
+  ]);
+  // Gabung dan dedupe
+  const all=[...(own||[]),...(shared||[])];
+  const seen=new Set();
+  MYA=all.filter(a=>{if(seen.has(a.id))return false;seen.add(a.id);return true;});
+
+  // Pisahkan akun sendiri vs akun pet shared
+  const ownAccs=(own||[]);
+  const sharedAccs=(shared||[]);
+
+  if(!MYA.length){
+    // Belum punya akun sama sekali — minta daftar
+    showRegScreen();return;
+  }
+
+  // Kalau hanya punya akun shared (pet) tapi belum punya akun owner sendiri
+  // → tampil reg screen dengan tab join, tapi juga bisa buat akun owner
+  if(!ownAccs.length && sharedAccs.length){
+    // Langsung masuk ke akun pet yang di-share, tapi kasih opsi buat akun owner
+    if(sharedAccs.length===1){
+      CU=sharedAccs[0];
+      localStorage.setItem(SESS_KEY(),CU.id);
+      startApp();
+      // Kasih notif bisa buat akun owner sendiri
+      setTimeout(()=>toast('💡 Kamu bisa buat akun owner sendiri di Settings!'),1500);
+      return;
+    }
+    showPicker();return;
+  }
+
+  // Restore akun terakhir dari localStorage
+  const lastId=localStorage.getItem(SESS_KEY());
+  if(lastId){
+    const found=MYA.find(a=>a.id===lastId);
+    if(found){CU=found;startApp();return;}
+  }
+
+  // Kalau cuma 1 akun langsung masuk, kalau lebih tampil picker
+  if(MYA.length===1){CU=MYA[0];localStorage.setItem(SESS_KEY(),CU.id);startApp();}
+  else showPicker();
+}
+
+function switchRegTab(t){
+  const isNew=t==='new';
+  g('rtab-new').style.cssText=isNew?'flex:1;padding:9px;border:none;border-radius:11px;font-family:var(--font);font-weight:700;font-size:.85rem;cursor:pointer;background:#fff;color:var(--ac2);box-shadow:0 2px 8px rgba(91,164,212,.15);':'flex:1;padding:9px;border:none;border-radius:11px;font-family:var(--font);font-weight:700;font-size:.85rem;cursor:pointer;background:transparent;color:var(--tx2);';
+  g('rtab-join').style.cssText=!isNew?'flex:1;padding:9px;border:none;border-radius:11px;font-family:var(--font);font-weight:700;font-size:.85rem;cursor:pointer;background:#fff;color:var(--ac2);box-shadow:0 2px 8px rgba(91,164,212,.15);':'flex:1;padding:9px;border:none;border-radius:11px;font-family:var(--font);font-weight:700;font-size:.85rem;cursor:pointer;background:transparent;color:var(--tx2);';
+  g('reg-tab-new').style.display=isNew?'':'none';
+  g('reg-tab-join').style.display=isNew?'none':'';
+}
+
+async function doJoinPet(){
+  const uname=g('join-username').value.trim().replace(/^@/,'').toLowerCase();
+  if(!uname){g('join-err').textContent='Masukkan username dulu!';return;}
+  // Cari akun pet dengan username ini
+  const{data:acc}=await db.from('cp_accounts').select('*')
+    .eq('username',uname).eq('account_type','pet').maybeSingle();
+  if(!acc){g('join-err').textContent='Akun pet tidak ditemukan!';return;}
+  // Cek apakah TG_ID ini punya akses (owner2_tg_id)
+  if(String(acc.owner2_tg_id)!==String(TG_ID)){
+    g('join-err').textContent='Kamu tidak punya akses ke akun ini. Minta partner share dulu via menu Settings → Share Akun Pet.';return;
+  }
+  // Akses valid — langsung masuk
+  MYA=[acc];CU=acc;
+  localStorage.setItem(SESS_KEY(),CU.id);
+  g('reg-screen').style.display='none';
+  startApp();
+  toast('✅ Berhasil masuk ke akun '+acc.display_name+'!');
+}
+
+function showRegScreen(){
+  const rs=g('reg-screen');
+  rs.style.display='flex';
+  g('reg-name').textContent='Halo, '+(TG_NAME||'?')+' (ID: '+TG_ID+')';
+  g('reg-err').textContent='';
+  g('reg-btn').disabled=false;g('reg-btn').textContent='Daftar & Bayar 500 🪙';
+  // Tambah tombol recover kalau belum ada
+  if(!g('btn-recover')){
+    const btn=document.createElement('button');
+    btn.id='btn-recover';
+    btn.className='btn-out';
+    btn.style.cssText='width:100%;margin-top:10px';
+    btn.textContent='🔑 Sudah punya akun? Masuk via username';
+    btn.onclick=openRecoverAccount;
+    g('reg-btn').parentNode.appendChild(btn);
+  }
+}
+
+async function doRegisterTG(){
+  const btn=g('reg-btn');btn.disabled=true;btn.textContent='Memproses...';
+  const re=g('reg-err');re.textContent='';
+
+  // Cek duplikat — max 1 akun owner per TG ID
+  const{data:existOwner}=await db.from('cp_accounts').select('id')
+    .eq('telegram_user_id',TG_ID).eq('account_type','owner').maybeSingle();
+  if(existOwner){
+    re.textContent='Kamu sudah punya akun owner!';
+    btn.disabled=false;btn.textContent='Daftar & Bayar 500 🪙';
+    return;
+  }
+
+  const{data:cu}=await db.from('users').select('koin').eq('user_id',parseInt(TG_ID)).maybeSingle();
+  if(!cu){re.textContent='Akun Carpet Shop tidak ditemukan! Mulai dulu di @carpetsrobot';btn.disabled=false;btn.textContent='Daftar & Bayar 500 🪙';return;}
+  if((cu.koin||0)<REG_FEE){re.textContent='Koin tidak cukup! Butuh 500 🪙. Mainkan game di Carpet Shop dulu~';btn.disabled=false;btn.textContent='Daftar & Bayar 500 🪙';return;}
+
+  // Potong koin
+  await db.from('users').update({koin:(cu.koin||0)-REG_FEE}).eq('user_id',parseInt(TG_ID));
+
+  // Buat akun owner
+  const nm=TG_NAME||('user_'+TG_ID);
+  const un=nm.toLowerCase().replace(/[^a-z0-9]/g,'_').substring(0,15)+'_'+~~(Math.random()*999);
+  const emoji=TG_USER?.username?'😊':'🐾';
+  const{data:acc,error}=await db.from('cp_accounts').insert({
+    telegram_user_id:TG_ID,display_name:nm,username:un,
+    account_type:'owner',avatar_emoji:emoji,
+    is_verified:false,followers_count:0,claimed_rewards:[],total_likes_received:0,claimed_like_rewards:[]
+  }).select().single();
+
+  if(error){re.textContent='Gagal buat akun: '+error.message;btn.disabled=false;btn.textContent='Daftar & Bayar 500 🪙';
+    // Refund koin
+    await db.from('users').update({koin:(cu.koin||0)}).eq('user_id',parseInt(TG_ID));
+    return;
+  }
+
+  // Auto-follow akun owner (ID 8513979925)
+  const{data:ownerAcc}=await db.from('cp_accounts').select('id').eq('telegram_user_id',OWNER_TG_ID).maybeSingle();
+  if(ownerAcc&&ownerAcc.id!==acc.id){
+    await db.from('cp_follows').upsert({follower_id:acc.id,following_id:ownerAcc.id},{onConflict:'follower_id,following_id',ignoreDuplicates:true});
+    const{count:fc}=await db.from('cp_follows').select('*',{count:'exact',head:true}).eq('following_id',ownerAcc.id);
+    await db.from('cp_accounts').update({followers_count:fc||0}).eq('id',ownerAcc.id);
+  }
+
+  MYA=[acc];CU=acc;
+  g('reg-screen').style.display='none';
+  localStorage.setItem(SESS_KEY(),CU.id);
+  startApp();
+  setTimeout(()=>toast('🎉 Akun berhasil dibuat! Selamat datang di Car Paws~'),800);
+}
+
+async function doLogout(){
+  if(_pollTimer){clearInterval(_pollTimer);_pollTimer=null;}
+  _feedCache=null;
+  CU=null;localStorage.removeItem(SESS_KEY());
+  g('app').style.display='none';xov('ov-s');
+  await loadAccs();
+}
+
+async function addPetAccount(){
+  // Tambah akun pet — bayar 500 koin dulu
+  xov('ov-s');
+  const{data:cu}=await db.from('users').select('koin').eq('user_id',parseInt(TG_ID)).maybeSingle();
+  if(!cu||(cu.koin||0)<REG_FEE){toast('❌ Koin tidak cukup! Butuh 500 🪙');return;}
+  // Konfirmasi
+  showConfirmSheet(
+    '🐾 Tambah Akun Pet',
+    'Biaya: <b>500 🪙</b> untuk buat akun pet baru.<br>Koin dipotong dari Carpet Shop.',
+    'Lanjut & Bayar',
+    async()=>{
+      closeConfirmSheet();
+      const{data:cu2}=await db.from('users').select('koin').eq('user_id',parseInt(TG_ID)).maybeSingle();
+      if(!cu2||(cu2.koin||0)<REG_FEE){toast('❌ Koin tidak cukup!');return;}
+      await db.from('users').update({koin:(cu2.koin||0)-REG_FEE}).eq('user_id',parseInt(TG_ID));
+      openCreate();
+    }
+  );
+}
+
+function showConfirmSheet(title,body,okTxt,onOk){
+  window._confirmCb=onOk; // simpan callback di window, closure tetap terjaga
+  const d=document.createElement('div');
+  d.id='conf-ov';d.className='overlay show';d.onclick=e=>{if(e.target.id==='conf-ov')closeConfirmSheet();};
+  d.innerHTML=`<div class="sheet" style="padding:20px 18px 28px">
+    <div class="sh-hdl"></div>
+    <div style="font-family:'Fredoka One',cursive;font-size:1.1rem;color:var(--tx);margin:10px 0 10px">${title}</div>
+    <p style="font-size:.87rem;color:var(--tx2);line-height:1.65;margin-bottom:20px">${body}</p>
+    <button class="btn-main" onclick="window._confirmCb&&window._confirmCb()">${okTxt}</button>
+    <button class="btn-out" style="margin-top:10px;width:100%" onclick="closeConfirmSheet()">Batal</button>
+  </div>`;
+  document.body.appendChild(d);
+}
+function closeConfirmSheet(){document.getElementById('conf-ov')?.remove();window._confirmCb=null;}
+
+function showPicker(){
+  // Sembunyikan tombol buat akun owner kalau sudah punya
+  const hasOwner=MYA.some(a=>a.account_type==='owner'&&a.telegram_user_id===TG_ID);
+  const buatOwnerBtn=document.querySelector('[onclick*="openBuatOwner"]');
+  if(buatOwnerBtn)buatOwnerBtn.style.display=hasOwner?'none':'';
+  const owners=MYA.filter(a=>a.account_type==='owner');
+  const pets=MYA.filter(a=>a.account_type==='pet');
+  let h='';
+  if(owners.length){h+='<div class="pk-sec">👤 Akun Pemilik</div>'+owners.map(pkItem).join('');}
+  if(pets.length){h+='<div class="pk-sec">🐾 Akun Pet</div>'+pets.map(pkItem).join('');}
+  h+=`<div class="pk-item pk-add" onclick="addPetAccount()"><div class="pk-ava">➕</div><div class="pk-info"><div class="pk-name">Tambah Akun Pet</div><div class="pk-handle">500 🪙 · Sync dari Carpet Shop</div></div></div>`;
+  g('pk-body').innerHTML=h;
+  g('picker').style.display='flex';g('app').style.display='none';
+}
+function pkItem(a){
+  const sel=CU?.id===a.id;
+  const ver=a.is_verified?'<span style="color:#1d9bf0;font-size:.75rem">✔</span>':'';
+  const isShared=a.owner2_tg_id===TG_ID&&a.telegram_user_id!==TG_ID;
+  const allUsernames=[a.username,a.username2,a.username3,a.username4].filter(Boolean);
+  const handleStr=allUsernames.map(u=>'@'+esc(u)).join(' · ');
+  return`<div class="pk-item${sel?' sel':''}" onclick="pickA('${a.id}')">
+    <div class="pk-ava">${a.avatar_url?`<img src="${a.avatar_url}"/>`:a.avatar_emoji||'🐾'}</div>
+    <div class="pk-info">
+      <div class="pk-name">${esc(a.display_name)} ${ver}</div>
+      <div class="pk-handle">${handleStr}</div>
+      <div class="pk-badge">${a.account_type==='pet'?'🐾 Pet':'👤 Pemilik'}${isShared?' · Shared':''}</div>
+    </div>
+    ${sel?'<div class="pk-chk">✓</div>':''}
+  </div>`;
+}
+function pickA(id){CU=MYA.find(a=>a.id===id);showPicker();}
+function confirmPick(){
+  if(!CU)CU=MYA[0];
+  localStorage.setItem(SESS_KEY(),CU.id);
+  g('picker').style.display='none';startApp();
+}
+
+function startApp(){
+  initDarkMode();
+  initHeader();
+  g('app').style.display='flex';updateTbAva();
+  loadFeed();
+  loadBookmarks();
+  checkDMDot();
+  // Init polling — ambil ID post terbaru sebagai baseline dulu
+  db.from('cp_posts').select('id').eq('is_reply',false).order('created_at',{ascending:false}).limit(1)
+    .then(({data})=>{_lastPostId=data?.[0]?.id||null;subRT();});
+  checkNDot();
+  // Sembunyikan tombol buat akun owner kalau sudah punya
+  const hasOwner=MYA.some(a=>a.account_type==='owner'&&a.telegram_user_id===TG_ID);
+  setTimeout(()=>{
+    const buatOwnerBtn=document.querySelector('[onclick*="openBuatOwner"]');
+    if(buatOwnerBtn)buatOwnerBtn.style.display=hasOwner?'none':'';
+  },100);
+}
+function updateTbAva(){
+  const el=g('tb-ava');
+  if(CU?.avatar_url)el.innerHTML=`<img src="${CU.avatar_url}"/>`;
+  else el.textContent=CU?.avatar_emoji||'🐾';
+}
+
+let _pollTimer=null,_lastPostId=null;
+function subRT(){
+  // Hapus realtime WebSocket — terlalu berat untuk 50+ user
+  // Ganti ke polling ringan setiap 15 detik
+  if(_pollTimer)clearInterval(_pollTimer);
+  _pollTimer=setInterval(pollUpdates,15000);
+}
+async function pollUpdates(){
+  if(!CU)return;
+  // Cek post baru (hanya ambil 1 row terbaru)
+  const{data:latest}=await db.from('cp_posts')
+    .select('id').eq('is_reply',false)
+    .order('created_at',{ascending:false}).limit(1);
+  const newId=latest?.[0]?.id;
+  if(_lastPostId&&newId&&newId!==_lastPostId&&curS==='home'){
+    _feedCache=null;
+    toast('✨ Ada postingan baru! Tarik untuk refresh.');
+  }
+  if(newId)_lastPostId=newId;
+  // Cek notif baru
+  const{count}=await db.from('cp_notifications')
+    .select('*',{count:'exact',head:true})
+    .eq('to_account_id',CU.id).eq('is_read',false);
+  if(count>0)g('npip').classList.add('show');
+  else g('npip').classList.remove('show');
+}
+
+function goS(n){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
+  g('s-'+n).classList.add('on');g('nb-'+n).classList.add('on');curS=n;
+  if(n==='home')loadFeed();  // pakai cache kalau masih fresh
+  if(n==='explore')loadExplore();
+  if(n==='notif')loadNotifs();
+  if(n==='profile')loadMyProfile();
+}
+
+function switchFeed(t,el){
+  document.querySelectorAll('.ftab').forEach(x=>x.classList.remove('on'));
+  el.classList.add('on');feedTab=t;loadFeed(true); // force reload saat ganti tab
+}
+
+async function loadFeed(force=false){
+  const el=g('fw');
+  const now=Date.now();
+  // Pakai cache kalau tab sama dan belum expired
+  if(!force&&_feedCache&&_feedCacheTab===feedTab&&(now-_feedCacheTime)<FEED_CACHE_MS){
+    el.innerHTML=_feedCache;return;
+  }
+  el.innerHTML=ld();
+  try{
+    let q=db.from('cp_posts').select('id,content,media_url,media_type,likes_count,replies_count,repost_count,is_repost,repost_of,created_at,account_id,account:cp_posts_account_id_fkey(id,display_name,username,avatar_url,avatar_emoji,is_verified,account_type)').eq('is_reply',false).order('created_at',{ascending:false}).limit(30);
+    if(feedTab==='following'&&CU){
+      const{data:fs,error:fsErr}=await db.from('cp_follows').select('following_id').eq('follower_id',CU.id);
+      if(fsErr){el.innerHTML=emp('❌','Error follows: '+fsErr.message,'');return;}
+      const ids=(fs||[]).map(f=>f.following_id);
+      if(!ids.length){el.innerHTML=emp('🌊','Belum ada following!','Follow akun lain dulu~');return;}
+      q=q.in('account_id',ids);
+    }
+    const{data:posts,error:postsErr}=await q;
+    if(postsErr){el.innerHTML=emp('❌','Error posts: '+postsErr.message,'');return;}
+    let list=posts||[];
+    if(feedTab==='pets')list=list.filter(p=>p.account?.account_type==='pet');
+    if(!list.length){el.innerHTML=emp('🌸','Belum ada postingan!','Jadilah yang pertama~');return;}
+    // Fetch orig posts for reposts (1 query saja, bukan N+1)
+    const origIds=[...new Set(list.filter(p=>p.is_repost&&p.repost_of).map(p=>p.repost_of))];
+    let origMap={};
+    if(origIds.length){
+      const{data:origs}=await db.from('cp_posts').select('id,content,media_url,media_type,account:cp_posts_account_id_fkey(id,display_name,username,avatar_url,avatar_emoji,is_verified,account_type)').in('id',origIds);
+      (origs||[]).forEach(o=>origMap[o.id]=o);
+    }
+    list=list.map(p=>p.is_repost&&p.repost_of?{...p,orig_post:origMap[p.repost_of]||null}:p);
+    const html=list.map(pc).join('');
+    _feedCache=html;_feedCacheTab=feedTab;_feedCacheTime=Date.now();
+    el.innerHTML=html;
+  }catch(e){
+    el.innerHTML=emp('❌','Error: '+e.message,'');
+    
+  }
+}
+
+function origPreview(o){
+  if(!o)return'<div style="background:var(--b1);border-radius:12px;padding:10px 12px;font-size:.82rem;color:var(--tx3);border:1.5px solid var(--border)">⚠️ Postingan asli tidak tersedia</div>';
+  const oa=o.account||{};
+  const oav=oa.avatar_url?`<img src="${oa.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`:oa.avatar_emoji||'🐾';
+  const omed=o.media_url?(o.media_type==='video'?`<div class="pc-media" style="margin-top:6px"><video src="${o.media_url}" controls playsinline preload="metadata"></video></div>`:`<div class="pc-media" style="margin-top:6px"><img src="${o.media_url}" loading="lazy"/></div>`):'';
+  return`<div style="background:var(--b1);border-radius:12px;padding:10px 12px;border:1.5px solid var(--border);margin-top:8px;cursor:pointer" onclick="event.stopPropagation();openPost('${o.id}')">
+    <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">
+      <div style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--b3),var(--b5));display:flex;align-items:center;justify-content:center;font-size:.65rem;flex-shrink:0;overflow:hidden">${oav}</div>
+      <span style="font-weight:800;font-size:.82rem">${esc(oa.display_name||'?')}</span>
+      ${oa.is_verified?'<span style="color:#1d9bf0;font-size:.72rem">✔</span>':''}
+      <span style="font-size:.75rem;color:var(--tx3)">@${esc(oa.username||'')}</span>
+    </div>
+    ${o.content?`<div style="font-size:.86rem;color:var(--tx);line-height:1.5">${esc(o.content)}</div>`:''}
+    ${omed}
+  </div>`;
+}
+function pc(p){
+  const a=p.account||{};
+  const av=a.avatar_url?`<img src="${a.avatar_url}"/>`:a.avatar_emoji||'🐾';
+  const isPureRepost=p.is_repost&&!p.content;
+  const med=p.media_url?(p.media_type==='video'?`<div class="pc-media"><video src="${p.media_url}" controls playsinline preload="metadata"></video></div>`:`<div class="pc-media"><img src="${p.media_url}" loading="lazy" onclick="event.stopPropagation()"/></div>`):'';
+  const repostBar=isPureRepost?`<div style="font-size:.76rem;color:var(--tx3);padding:8px 16px 0;display:flex;align-items:center;gap:5px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>${esc(a.display_name)} Merepost</div>`:'';
+  // For pure repost: show original post content; for quote repost: show quote box below
+  const origBox=p.is_repost&&p.orig_post?origPreview(p.orig_post):'';
+  const displayP=isPureRepost&&p.orig_post?p.orig_post:p;
+  const displayA=isPureRepost&&p.orig_post?p.orig_post.account||{}:a;
+  const displayAv=displayA.avatar_url?`<img src="${displayA.avatar_url}"/>`:displayA.avatar_emoji||'🐾';
+  const displayMed=isPureRepost&&p.orig_post?(p.orig_post.media_url?(p.orig_post.media_type==='video'?`<div class="pc-media"><video src="${p.orig_post.media_url}" controls playsinline preload="metadata"></video></div>`:`<div class="pc-media"><img src="${p.orig_post.media_url}" loading="lazy" onclick="event.stopPropagation()"/></div>`):''):med;
+  return`<div class="post-card" onclick="openPost('${p.repost_of||p.id}')">
+    ${repostBar}
+    <div class="pc-row" style="padding:${isPureRepost?'8px 16px 0':'0'}">
+      <div class="pc-ava" onclick="event.stopPropagation();openProf('${displayA.id||a.id}')">${displayAv}</div>
+      <div class="pc-body">
+        <div class="pc-top">
+          <span class="pc-name">${esc(displayA.display_name||'?')}</span>
+          ${displayA.is_verified?'<span style="color:#1d9bf0;font-size:.8rem">✔</span>':''}
+          ${displayA.account_type==='pet'?'<span class="ptag">🐾</span>':''}
+          <span class="pc-time">· ${ago(displayP.created_at||p.created_at)}</span>
+        </div>
+        <div style="font-size:.76rem;color:var(--tx3)">@${esc(displayA.username||'')}</div>
+        ${displayP.content?`<div class="pc-txt">${esc(displayP.content)}</div>`:''}
+        ${displayMed}
+        ${!isPureRepost&&p.is_repost?origBox:''}
+        <div class="pc-acts">
+          <button class="pca" onclick="event.stopPropagation();doLike('${p.id}',this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            <span>${p.likes_count||0}</span>
+          </button>
+          <button class="pca" onclick="event.stopPropagation();openPost('${p.id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span>${p.replies_count||0}</span>
+          </button>
+          <button class="pca" onclick="event.stopPropagation();openShareMenu('${p.id}',this)" id="rb-${p.id}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+            <span id="rc-${p.id}">${p.repost_count||0}</span>
+          </button>
+          <button class="pca bm-btn" id="bm-${p.id}" onclick="event.stopPropagation();toggleBookmark('${p.id}',this)" title="Bookmark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          </button>
+          ${CU&&CU.id===a.id?`<button class="pca" onclick="event.stopPropagation();openPostMenu('${p.id}','${a.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>`:''}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function prependPost(p){
+  _feedCache=null; // invalidate cache saat ada post baru
+  const el=g('fw');const d=document.createElement('div');d.innerHTML=pc(p);el.insertBefore(d.firstElementChild,el.firstChild);
+}
+
+async function doLike(pid,btn){
+  if(!CU)return;
+  const svg=btn.querySelector('svg');
+  const cnt=btn.querySelector('span');
+  if(!svg||!cnt)return;
+  btn.disabled=true; // prevent double tap
+  // Ambil likes_count dari DB langsung — bukan dari DOM (biar akurat)
+  const[{data:ex},{data:post}]=await Promise.all([
+    db.from('cp_likes').select('id').eq('post_id',pid).eq('account_id',CU.id).maybeSingle(),
+    db.from('cp_posts').select('likes_count,account_id').eq('id',pid).single()
+  ]);
+  const n=post?.likes_count||0;
+  if(ex){
+    // Unlike
+    await db.from('cp_likes').delete().eq('id',ex.id);
+    const newCount=Math.max(0,n-1);
+    await db.from('cp_posts').update({likes_count:newCount}).eq('id',pid);
+    svg.setAttribute('fill','none');cnt.textContent=newCount;btn.classList.remove('liked');
+  }else{
+    // Like
+    await db.from('cp_likes').insert({post_id:pid,account_id:CU.id});
+    const newCount=n+1;
+    await db.from('cp_posts').update({likes_count:newCount}).eq('id',pid);
+    svg.setAttribute('fill','currentColor');cnt.textContent=newCount;btn.classList.add('liked');
+    // Fire-and-forget notif + reward
+    if(post&&post.account_id!==CU.id){
+      db.from('cp_notifications').insert({to_account_id:post.account_id,from_account_id:CU.id,type:'like',post_id:pid});
+      checkLikeReward(post.account_id);
+    }
+  }
+  btn.disabled=false;
+  _feedCache=null; // invalidate cache
+}
+
+async function openPost(pid){
+  curPID=pid;
+  const pd=g('pd');pd.style.display='flex';pd.style.flexDirection='column';
+  const ca=g('ca');
+  if(CU?.avatar_url)ca.innerHTML=`<img src="${CU.avatar_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover"/>`;
+  else ca.textContent=CU?.avatar_emoji||'🐾';
+  loadPD(pid);
+}
+
+async function loadPD(pid){
+  const sc=g('pds');sc.innerHTML=ld();
+  const{data:p}=await db.from('cp_posts').select('*,account:cp_posts_account_id_fkey(*)').eq('id',pid).single();
+  if(!p){sc.innerHTML=emp('😅','Tidak ditemukan','');return;}
+  const a=p.account||{};
+  const{data:cmts}=await db.from('cp_posts').select('*,account:cp_posts_account_id_fkey(*)').eq('reply_to',pid).order('created_at');
+  const av=a.avatar_url?`<img src="${a.avatar_url}"/>`:a.avatar_emoji||'🐾';
+  const med=p.media_url?(p.media_type==='video'?`<div class="pc-media"><video src="${p.media_url}" controls playsinline></video></div>`:`<div class="pc-media"><img src="${p.media_url}"/></div>`):'';
+  sc.innerHTML=`
+    <div class="pd-main">
+      <div class="pd-head">
+        <div class="pd-ava" onclick="openProf('${a.id}')">${av}</div>
+        <div style="flex:1">
+          <div style="font-weight:800;font-size:.96rem">${esc(a.display_name)}${a.account_type==='pet'?'<span class="ptag">🐾</span>':''}</div>
+          <div style="font-size:.8rem;color:var(--tx2)">@${esc(a.username)}</div>
+        </div>
+        ${CU&&CU.id===a.id?`<button style="background:none;border:none;padding:6px;cursor:pointer;color:var(--tx3)" onclick="openPostMenu('${p.id}','${a.id}')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>`:''}
+      </div>
+      ${p.content?`<div class="pd-txt">${esc(p.content)}</div>`:''}
+      ${med}
+      <div class="pd-ts">${new Date(p.created_at).toLocaleString('id-ID')}</div>
+      <div class="pd-stats"><div class="pd-stat"><b>${p.likes_count||0}</b> Suka</div><div class="pd-stat"><b>${p.replies_count||0}</b> Komentar</div></div>
+      <div class="pd-acts">
+        <button class="pda" onclick="doLike('${p.id}',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span>Suka</span>
+        </button>
+        <button class="pda" onclick="openShareMenu('${p.id}',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+          Repost
+        </button>
+        <button class="pda" onclick="shareLink('${p.id}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Bagikan
+        </button>
+      </div>
+    </div>
+    <div class="cmts-lbl">💬 Komentar (${(cmts||[]).length})</div>
+    ${(cmts||[]).map(c=>{
+      const ca2=c.account||{};
+      const cav=ca2.avatar_url?`<img src="${ca2.avatar_url}"/>`:ca2.avatar_emoji||'🐾';
+      const canDelCmt=CU&&(CU.id===ca2.id||CU.id===a.id);
+      return`<div class="cmt"><div class="cmt-ava" onclick="openProf('${ca2.id}')">${cav}</div>
+        <div style="flex:1">
+          <div class="cmt-name">${esc(ca2.display_name||'?')}</div>
+          <div class="cmt-txt">${c.content?.startsWith('[sticker]')?`<img src="${c.content.replace('[sticker]','')}" style="width:80px;height:80px;object-fit:cover;border-radius:10px"/>`:esc(c.content)}</div>
+          <div style="display:flex;align-items:center;gap:14px;margin-top:4px">
+            <span class="cmt-ts">${ago(c.created_at)}</span>
+            <button style="background:none;border:none;font-size:.76rem;color:var(--ac);font-weight:700;cursor:pointer;padding:0" onclick="replyToCmt('${ca2.display_name}','${ca2.id}')">Balas</button>
+            ${canDelCmt?`<button style="background:none;border:none;font-size:.76rem;color:#e03;font-weight:700;cursor:pointer;padding:0" onclick="deleteCmt('${c.id}','${curPID}')">Hapus</button>`:''}
+          </div>
+        </div></div>`;
+    }).join('')}`;
+}
+
+function closePD(){g('pd').style.display='none';g('pds').innerHTML='';curPID=null;}
+
+function openPostMenu(pid, ownerAccId){
+  if(!CU||CU.id!==ownerAccId)return;
+  const d=document.createElement('div');
+  d.id='pm-ov';d.className='overlay show';d.onclick=e=>{if(e.target.id==='pm-ov')d.remove();};
+  const isPinned=CU?.pinned_post_id===pid;
+  d.innerHTML=`<div class="sheet" style="padding:14px 0 28px">
+    <div class="sh-hdl"></div>
+    <div class="si" onclick="${isPinned?`unpinPost()`:`pinPost('${pid}')`};document.getElementById('pm-ov').remove()">
+      <div class="si-ico">📌</div>
+      <div><div class="si-lbl">${isPinned?'Copot Pin':'Pin di Profil'}</div><div class="si-sub">${isPinned?'Hapus pin dari profil':'Tampilkan di atas profil kamu'}</div></div>
+    </div>
+    <div class="si" style="color:#e03" onclick="confirmDeletePost('${pid}');document.getElementById('pm-ov').remove()">
+      <div class="si-ico">🗑️</div>
+      <div><div class="si-lbl" style="color:#e03">Hapus Postingan</div><div class="si-sub">Postingan akan dihapus permanen</div></div>
+    </div>
+  </div>`;
+  document.body.appendChild(d);
+}
+
+function confirmDeletePost(pid){
+  showConfirmSheet('🗑️ Hapus Postingan','Yakin mau hapus postingan ini? Tidak bisa dibatalkan.','Hapus',async()=>{
+    closeConfirmSheet();
+    await db.from('cp_posts').delete().eq('id',pid);
+    // Hapus likes & notif terkait
+    await db.from('cp_likes').delete().eq('post_id',pid);
+    await db.from('cp_notifications').delete().eq('post_id',pid);
+    toast('🗑️ Postingan dihapus');
+    if(curPID===pid)closePD();
+    loadFeed();
+    if(curS==='profile')loadMyProfile();
+  });
+}
+
+async function sendCmt(){
+  if(!CU||!curPID)return;
+  const inp=g('ci');const txt=inp.value.trim();if(!txt)return;
+  // Cek apakah ini reply ke comment (@mention)
+  const replyToUsername=inp.dataset.replyTo||null;
+  inp.value='';inp.dataset.replyTo='';
+  const{data:newCmt}=await db.from('cp_posts').insert({account_id:CU.id,content:txt,is_reply:true,reply_to:curPID}).select().single();
+  const{data:pp}=await db.from('cp_posts').select('replies_count,account_id').eq('id',curPID).single();
+  if(pp){
+    await db.from('cp_posts').update({replies_count:(pp.replies_count||0)+1}).eq('id',curPID);
+    // Notif ke pemilik post
+    if(pp.account_id!==CU.id)
+      await db.from('cp_notifications').insert({to_account_id:pp.account_id,from_account_id:CU.id,type:'comment',post_id:curPID});
+    // Notif ke commenter yang di-reply (kalau ada @mention, replyToUsername = account_id)
+    if(replyToUsername&&replyToUsername!==CU.id&&replyToUsername!==pp.account_id){
+      await db.from('cp_notifications').insert({to_account_id:replyToUsername,from_account_id:CU.id,type:'reply',post_id:curPID});
+    }
+  }
+  loadPD(curPID);
+}
+
+function openCompose(){
+  if(!CU)return;
+  const ca=g('cwa');
+  if(CU.avatar_url)ca.innerHTML=`<img src="${CU.avatar_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover"/>`;
+  else ca.textContent=CU.avatar_emoji||'🐾';
+  g('cwn').textContent=CU.display_name;g('cwh').textContent='@'+CU.username;
+  g('ct').value='';g('ccc').textContent='0/500';g('cpv').className='hidden';_mf=null;
+  g('ov-c').classList.add('show');
+  setTimeout(()=>g('ct').focus(),300);
+}
+function cc(){g('ccc').textContent=g('ct').value.length+'/500';}
+
+async function handleMedia(inp){
+  const f=inp.files[0];if(!f)return;
+  const isV=f.type.startsWith('video/');const maxMb=isV?5:3;
+  if(f.size>maxMb*1024*1024){toast(`❌ Max ${maxMb}MB!`);inp.value='';return;}
+  _mf=isV?f:await compImg(f,1200,.82);
+  const url=URL.createObjectURL(_mf);
+  const pv=g('cpv');pv.className='cmprev';
+  pv.innerHTML=isV?`<video src="${url}" controls style="max-height:180px;width:100%"></video><button class="rm-m" onclick="rmM()">✕</button>`:`<img src="${url}" style="max-height:180px;width:100%;object-fit:cover"/><button class="rm-m" onclick="rmM()">✕</button>`;
+}
+function rmM(){_mf=null;g('cpv').className='hidden';g('cf').value='';}
+
+async function submitPost(){
+  if(!CU)return;
+  const txt=g('ct').value.trim();if(!txt&&!_mf){toast('Tulis sesuatu!');return;}
+  const btn=g('pb');btn.disabled=true;btn.textContent='Posting...';
+  let mu=null,mt=null;
+  if(_mf){
+    const ext=_mf.type?.startsWith('video/')?'mp4':'jpg';
+    const path=`posts/${CU.id}_${Date.now()}.${ext}`;
+    const{error}=await db.storage.from('carpaws-media').upload(path,_mf,{upsert:true});
+    if(error){toast('❌ Gagal upload!');btn.disabled=false;btn.textContent='Post 🐾';return;}
+    const{data:{publicUrl}}=db.storage.from('carpaws-media').getPublicUrl(path);
+    mu=publicUrl;mt=_mf.type?.startsWith('video/')?'video':'image';
+  }
+  await db.from('cp_posts').insert({account_id:CU.id,content:txt,media_url:mu,media_type:mt,is_reply:false});
+  btn.disabled=false;btn.textContent='Post 🐾';xov('ov-c');toast('✅ Diposting!');
+  _feedCache=null; // invalidate cache setelah posting
+  if(curS==='home')loadFeed(true);
+}
+
+async function loadExplore(){
+  const el=g('ew');el.innerHTML='<div class="sec-lbl">🔥 Populer</div>'+ld();
+  const{data:posts}=await db.from('cp_posts').select('id,content,media_url,media_type,likes_count,replies_count,repost_count,is_repost,repost_of,created_at,account_id,account:cp_posts_account_id_fkey(id,display_name,username,avatar_url,avatar_emoji,is_verified,account_type)').eq('is_reply',false).order('likes_count',{ascending:false}).limit(20);
+  if(!posts?.length){el.innerHTML=emp('🔍','Belum ada konten','');return;}
+  el.innerHTML='<div class="sec-lbl">🔥 Populer</div>'+posts.map(pc).join('');
+}
+
+let _st;
+function doSearch(q){
+  clearTimeout(_st);
+  if(!q.trim()){loadExplore();return;}
+  _st=setTimeout(async()=>{
+    const el=g('ew');el.innerHTML=ld();
+    const[{data:accs},{data:posts}]=await Promise.all([
+      db.from('cp_accounts').select('*').or(`display_name.ilike.%${q}%,username.ilike.%${q}%,username2.ilike.%${q}%,username3.ilike.%${q}%,username4.ilike.%${q}%`).limit(6),
+      db.from('cp_posts').select('*,account:cp_posts_account_id_fkey(*)').ilike('content',`%${q}%`).eq('is_reply',false).limit(15)
+    ]);
+    let h='';
+    if(accs?.length){
+      h+='<div class="sec-lbl">👤 Akun</div>';
+      h+=accs.map(a=>`<div class="pk-item" style="border-radius:0;margin-bottom:0;border-left:none;border-right:none;border-top:none" onclick="openProf('${a.id}')">
+        <div class="pk-ava">${a.avatar_url?`<img src="${a.avatar_url}"/>`:a.avatar_emoji||'🐾'}</div>
+        <div class="pk-info"><div class="pk-name">${esc(a.display_name)}${a.account_type==='pet'?'<span class="ptag">🐾</span>':''}</div>
+        <div class="pk-handle">@${esc(a.username)}</div></div></div>`).join('');
+    }
+    if(posts?.length){h+='<div class="sec-lbl">📝 Postingan</div>'+posts.map(pc).join('');}
+    if(!h)h=emp('🔍','Tidak ditemukan','Coba kata kunci lain');
+    el.innerHTML=h;
+  },400);
+}
+
+async function loadNotifs(){
+  if(!CU)return;
+  const el=g('nw');el.innerHTML=ld();
+  const{data:ns}=await db.from('cp_notifications').select('*,fa:cp_accounts!from_account_id(*)').eq('to_account_id',CU.id).order('created_at',{ascending:false}).limit(40);
+  await db.from('cp_notifications').update({is_read:true}).eq('to_account_id',CU.id);
+  g('npip').classList.remove('show');
+  if(!ns?.length){el.innerHTML=emp('🔔','Belum ada notifikasi','');return;}
+  const ic={like:'❤️',comment:'💬',follow:'🐾',reward:'🎉',reply:'↩️',repost:'🔁',dm:'💬'};
+  const mg={
+    like:n=>`<b>${esc(n.fa?.display_name)}</b> menyukai postinganmu`,
+    comment:n=>`<b>${esc(n.fa?.display_name)}</b> berkomentar di postinganmu`,
+    reply:n=>`<b>${esc(n.fa?.display_name)}</b> membalas komentarmu`,
+    follow:n=>`<b>${esc(n.fa?.display_name)}</b> mulai mengikutimu`,
+    repost:n=>`<b>${esc(n.fa?.display_name)}</b> merepost postinganmu`,
+    dm:n=>`<b>${esc(n.fa?.display_name)}</b> mengirim pesan ke kamu`,
+    reward:n=>`🎉 Kamu dapat reward koin dari milestone!`
+  };
+  el.innerHTML=ns.map(n=>{
+    let action='';
+    if(n.post_id) action=`openPost('${n.post_id}')`;
+    else if(n.type==='dm'&&n.fa?.id) action=`openDMWith('${n.fa.id}')`;
+    else if((n.type==='follow'||n.type==='reward')&&n.fa?.id) action=`openProf('${n.fa.id}')`;
+    return`<div class="ni${n.is_read?'':' unread'}" onclick="${action}" style="${!n.is_read?'background:var(--b1)':''}${action?';cursor:pointer':''}">
+    <div class="ni-ico">${ic[n.type]||'🔔'}</div>
+    <div><div class="ni-tx">${mg[n.type]?.(n)||n.type}</div><div class="ni-ts">${ago(n.created_at)}</div></div>
+  </div>`;
+  }).join('');
+}
+
+async function checkNDot(){
+  if(!CU)return;
+  const{count}=await db.from('cp_notifications').select('*',{count:'exact',head:true}).eq('to_account_id',CU.id).eq('is_read',false);
+  if(count>0)g('npip').classList.add('show');
+}
+
+async function loadMyProfile(){if(!CU)return;renderProf(CU.id,true,g('prw'));}
+
+async function openProf(accId){
+  const ov=document.createElement('div');
+  // Selalu di atas elemen yang sedang aktif
+  const topZ=Math.max(...[...document.querySelectorAll('[style*="z-index"]')].map(e=>parseInt(e.style.zIndex)||0).concat([480]))+10;
+  ov.style.cssText=`position:fixed;inset:0;background:var(--b0);z-index:${topZ};overflow-y:auto;`;
+  ov.id='pov';document.body.appendChild(ov);
+  ov.innerHTML=`<div style="position:sticky;top:0;background:rgba(240,248,255,.92);backdrop-filter:blur(12px);border-bottom:1.5px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:10px;z-index:10;">
+    <button onclick="document.getElementById('pov').remove()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--tx)">←</button>
+    <span style="font-family:'Fredoka One',cursive;font-size:1.1rem;color:var(--tx)">Profil</span>
+  </div><div id="pov-c">${ld()}</div>`;
+  await renderProf(accId,false,g('pov-c'));
+}
+
+async function renderProf(accId,isOwn,el){
+  el.innerHTML=ld();
+  const queries=[
+    db.from('cp_accounts').select('*').eq('id',accId).single(),
+    db.from('cp_posts').select('*,account:cp_posts_account_id_fkey(*)').eq('account_id',accId).eq('is_reply',false).order('created_at',{ascending:false}).limit(20),
+    db.from('cp_follows').select('*',{count:'exact',head:true}).eq('following_id',accId),
+    db.from('cp_follows').select('*',{count:'exact',head:true}).eq('follower_id',accId),
+    db.from('cp_posts').select('*',{count:'exact',head:true}).eq('account_id',accId).eq('is_reply',false),
+  ];
+  if(CU&&CU.id!==accId){
+    queries.push(db.from('cp_follows').select('id').eq('follower_id',CU.id).eq('following_id',accId).maybeSingle());
+    queries.push(db.from('cp_follows').select('id').eq('follower_id',accId).eq('following_id',CU.id).maybeSingle()); // cek followback
+  }
+  const results=await Promise.all(queries);
+  const a=results[0].data;
+  if(!a){el.innerHTML=emp('😅','Tidak ditemukan','');return;}
+  let posts=results[1].data||[];
+  const flwrs=results[2].count||0;
+  const flwng=results[3].count||0;
+  const postsCount=results[4].count||0;
+  const isFol=CU&&CU.id!==accId?!!(results[5]?.data):false;
+  const theyFollowMe=CU&&CU.id!==accId?!!(results[6]?.data):false;
+  const isMutual=isFol&&theyFollowMe;
+  // Fetch original posts for reposts
+  const origIds=[...new Set(posts.filter(p=>p.is_repost&&p.repost_of).map(p=>p.repost_of))];
+  let origMap={};
+  if(origIds.length){
+    const{data:origs}=await db.from('cp_posts').select('*,account:cp_posts_account_id_fkey(*)').in('id',origIds);
+    (origs||[]).forEach(o=>origMap[o.id]=o);
+  }
+  posts=posts.map(p=>p.is_repost&&p.repost_of?{...p,orig_post:origMap[p.repost_of]||null}:p);
+  const switchBtn=isOwn&&MYA.length>1?`<button class="btn-out" onclick="showPicker()" style="padding:9px 12px">🔄</button>`:'';
+  let followBtn='';
+  if(!isOwn&&CU){
+    if(isMutual){
+      followBtn=`<button class="btn-fol ing" id="fb-${accId}" onclick="toggleFol('${accId}',true)">✓ Following</button><span class="friend-badge">🤝 Friend</span>`;
+    } else if(isFol){
+      followBtn=`<button class="btn-fol ing" id="fb-${accId}" onclick="toggleFol('${accId}',true)">✓ Following</button>`;
+    } else if(theyFollowMe){
+      followBtn=`<button class="btn-fol" id="fb-${accId}" onclick="toggleFol('${accId}',false)">Follow Back</button>`;
+    } else {
+      followBtn=`<button class="btn-fol" id="fb-${accId}" onclick="toggleFol('${accId}',false)">+ Follow</button>`;
+    }
+  }
+  // Tambah DM button di profil orang lain
+  if(!isOwn&&CU){followBtn+=` <button class="btn-out" onclick="openDMWith('${accId}')" style="padding:9px 12px">💬 DM</button>`;}
+  const acts=isOwn
+    ?`${switchBtn}<button class="btn-out" onclick="openSettings()">⚙️</button><button class="btn-out" onclick="openEdit()">✏️ Edit</button>`
+    :followBtn;
+  el.innerHTML=`
+    <div style="position:relative">
+      <div class="prof-cover"></div>
+      <div class="prof-ava-w">${a.avatar_url?`<img src="${a.avatar_url}"/>`:a.avatar_emoji||'🐾'}</div>
+    </div>
+    <div class="prof-info">
+      <div class="prof-name">${esc(a.display_name)}${a.is_verified?'<span style="color:#1d9bf0;font-size:.9rem"> ✔</span>':''}${a.account_type==='pet'?'<span class="ptag">🐾 pet</span>':''}</div>
+      <div class="prof-handle">${[a.username,a.username2,a.username3,a.username4].filter(Boolean).map(u=>'@'+esc(u)).join(' · ')}</div>
+      ${a.bio?`<div class="prof-bio">${esc(a.bio)}</div>`:''}
+      <div class="prof-stats">
+        <div style="cursor:default"><div class="ps-n">${postsCount||0}</div><div class="ps-l">Post</div></div>
+        <div style="cursor:pointer" onclick="showFollowList('${accId}','followers')"><div class="ps-n">${flwrs||0}</div><div class="ps-l">Followers</div></div>
+        <div style="cursor:pointer" onclick="showFollowList('${accId}','following')"><div class="ps-n">${flwng||0}</div><div class="ps-l">Following</div></div>
+      </div>
+      <div class="prof-acts">${acts}</div>
+    </div>
+    <div class="prof-tabs">
+      <button class="ptab on" onclick="switchProfTab('${accId}',this)">📝 Posts</button>
+      <button class="ptab" onclick="loadProfReplies('${accId}',this)">💬 Replies</button>
+      <button class="ptab" onclick="loadProfMedia('${accId}',this)">🖼️ Media</button>
+    </div>
+    <div id="prof-tab-content-${accId}">
+      ${posts?.length?posts.map(p=>pc(p)).join(''):emp('📝','Belum ada postingan','')}
+    </div>`;
+  // Simpan posts ke window supaya bisa diakses switchProfTab tanpa inline JSON
+  window['_profPosts_'+accId]=posts;
+}
+
+function switchProfTab(accId,btn){
+  document.querySelectorAll('.ptab').forEach(x=>x.classList.remove('on'));
+  btn.classList.add('on');
+  const el=document.getElementById('prof-tab-content-'+accId);
+  if(!el)return;
+  const posts=window['_profPosts_'+accId]||[];
+  el.innerHTML=posts.length?posts.map(p=>pc(p)).join(''):emp('📝','Belum ada postingan','');
+}
+
+async function loadProfReplies(accId,btn){
+  document.querySelectorAll('.ptab').forEach(x=>x.classList.remove('on'));
+  btn.classList.add('on');
+  const el=document.getElementById('prof-tab-content-'+accId);
+  if(!el)return;
+  el.innerHTML=ld();
+  const{data:replies}=await db.from('cp_posts').select('*,account:cp_posts_account_id_fkey(*),orig:cp_posts!reply_to(id,content,account:cp_posts_account_id_fkey(display_name,username))').eq('account_id',accId).eq('is_reply',true).order('created_at',{ascending:false}).limit(20);
+  if(!replies?.length){el.innerHTML=emp('💬','Belum ada reply','');return;}
+  el.innerHTML=replies.map(r=>{
+    const orig=r.orig;
+    return`<div class="post-card" onclick="openPost('${r.reply_to||r.id}')">
+      ${orig?`<div style="font-size:.76rem;color:var(--tx3);padding:8px 16px 0">↩️ Membalas @${esc(orig.account?.username||'?')}</div>`:''}
+      ${pc(r)}
+    </div>`;
+  }).join('');
+}
+
+async function loadProfMedia(accId,btn){
+  document.querySelectorAll('.ptab').forEach(x=>x.classList.remove('on'));
+  btn.classList.add('on');
+  const el=document.getElementById('prof-tab-content-'+accId);
+  if(!el)return;
+  el.innerHTML=ld();
+  const{data:mediaPosts}=await db.from('cp_posts').select('id,media_url,media_type').eq('account_id',accId).not('media_url','is',null).order('created_at',{ascending:false}).limit(30);
+  if(!mediaPosts?.length){el.innerHTML=emp('🖼️','Belum ada media','');return;}
+  el.innerHTML=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:2px">
+    ${mediaPosts.map(p=>`<div onclick="openPost('${p.id}')" style="aspect-ratio:1;overflow:hidden;cursor:pointer;background:var(--b2)">
+      ${p.media_type==='video'
+        ?`<video src="${p.media_url}" style="width:100%;height:100%;object-fit:cover"></video>`
+        :`<img src="${p.media_url}" style="width:100%;height:100%;object-fit:cover" loading="lazy"/>`}
+    </div>`).join('')}
+  </div>`;
+}
+
+async function showFollowList(accId, type){
+  const title = type==='followers' ? '❤️ Followers' : '➡️ Following';
+  const d=document.createElement('div');
+  d.id='fl-ov';d.className='overlay show';d.onclick=e=>{if(e.target.id==='fl-ov')d.remove();};
+  d.innerHTML=`<div class="sheet" style="position:relative;max-height:80vh">
+    <div class="sh-hdl"></div>
+    <div class="sh-ttl">${title}</div>
+    <button class="sh-close" onclick="document.getElementById('fl-ov').remove()">✕</button>
+    <div id="fl-list" style="padding:10px 0">${ld()}</div>
+  </div>`;
+  document.body.appendChild(d);
+
+  let accIds=[];
+  if(type==='followers'){
+    const{data:follows}=await db.from('cp_follows').select('follower_id').eq('following_id',accId);
+    accIds=(follows||[]).map(f=>f.follower_id);
+  } else {
+    const{data:follows}=await db.from('cp_follows').select('following_id').eq('follower_id',accId);
+    accIds=(follows||[]).map(f=>f.following_id);
+  }
+  if(!accIds.length){
+    document.getElementById('fl-list').innerHTML=`<div class="emp"><div class="emp-i">👀</div><div class="emp-t">${type==='followers'?'Belum ada followers':'Belum following siapapun'}</div></div>`;
+    return;
+  }
+  const{data:accs}=await db.from('cp_accounts').select('*').in('id',accIds);
+  // Ambil mutual set (siapa yang CU follow)
+  let myFollowingIds=new Set();
+  if(CU){
+    const{data:mf}=await db.from('cp_follows').select('following_id').eq('follower_id',CU.id);
+    (mf||[]).forEach(f=>myFollowingIds.add(f.following_id));
+  }
+  renderFollowList(accs||[], myFollowingIds);
+}
+
+function renderFollowList(accs, myFollowingIds=new Set()){
+  const el=document.getElementById('fl-list');
+  if(!el)return;
+  if(!accs.length){el.innerHTML='<div class="emp"><div class="emp-i">👀</div><div class="emp-t">Kosong</div></div>';return;}
+  el.innerHTML=accs.map(a=>{
+    const isMutual=CU&&myFollowingIds.has(a.id)&&a.id!==CU.id;
+    const isMe=CU&&a.id===CU.id;
+    return`<div style="display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--b1);cursor:pointer" onclick="document.getElementById('fl-ov').remove();openProf('${a.id}')">
+      <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--b3),var(--b5));display:flex;align-items:center;justify-content:center;font-size:1.2rem;overflow:hidden;flex-shrink:0">
+        ${a.avatar_url?`<img src="${a.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`:a.avatar_emoji||'🐾'}
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:800;font-size:.9rem;display:flex;align-items:center;flex-wrap:wrap;gap:3px">
+          ${esc(a.display_name)}${a.is_verified?'<span style="color:#1d9bf0;font-size:.8rem">✔</span>':''}${a.account_type==='pet'?'<span class="ptag">🐾</span>':''}
+          ${isMutual?'<span class="friend-tag">🤝 Friend</span>':''}
+          ${isMe?'<span class="friend-tag" style="background:var(--b2);color:var(--ac2)">Kamu</span>':''}
+        </div>
+        <div style="font-size:.78rem;color:var(--tx2)">${[a.username,a.username2,a.username3,a.username4].filter(Boolean).map(u=>'@'+u).join(' · ')}</div>
+        ${a.bio?`<div style="font-size:.78rem;color:var(--tx3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(a.bio)}</div>`:''}
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-size:.78rem;color:var(--tx3);font-weight:700">${(a.followers_count||0).toLocaleString()}</div>
+        <div style="font-size:.68rem;color:var(--tx3)">followers</div>
+        ${!isMe&&CU?`<button onclick="event.stopPropagation();openDMWith('${a.id}')" style="background:var(--b2);border:none;border-radius:10px;padding:3px 8px;font-size:.68rem;color:var(--ac2);font-weight:700;cursor:pointer;margin-top:3px">💬 DM</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function toggleFol(accId,isFol){
+  if(!CU)return;
+  // Cek kalau target adalah akun owner — gabisa unfollow
+  if(isFol){
+    const{data:target}=await db.from('cp_accounts').select('telegram_user_id').eq('id',accId).maybeSingle();
+    if(String(target?.telegram_user_id)===String(OWNER_TG_ID)){toast('❌ Tidak bisa unfollow akun ini!');return;}
+  }
+  const btn=g('fb-'+accId);
+  if(isFol){
+    await db.from('cp_follows').delete().eq('follower_id',CU.id).eq('following_id',accId);
+    if(btn){btn.textContent='+ Follow';btn.classList.remove('ing');btn.onclick=()=>toggleFol(accId,false);}
+  }else{
+    await db.from('cp_follows').insert({follower_id:CU.id,following_id:accId});
+    db.from('cp_notifications').insert({to_account_id:accId,from_account_id:CU.id,type:'follow'});
+    if(btn){btn.textContent='✓ Following';btn.classList.add('ing');btn.onclick=()=>toggleFol(accId,true);}
+    checkFollowerReward(accId);
+  }
+  // Update followers_count
+  const{count}=await db.from('cp_follows').select('*',{count:'exact',head:true}).eq('following_id',accId);
+  await db.from('cp_accounts').update({followers_count:count||0}).eq('id',accId);
+}
+
+function openEdit(){
+  xov('ov-s');if(!CU)return;
+  g('en').value=CU.display_name||'';g('eu').value=CU.username||'';
+  g('eb').value=CU.bio||'';
+  if(g('etg'))g('etg').value=CU.telegram_user_id||'';
+  // Tampil username2/3 hanya untuk akun owner khusus
+  if(TG_ID==='8513979925'&&CU.account_type==='owner'){
+    g('extra-usernames').style.display='';
+    if(g('eu2'))g('eu2').value=CU.username2||'';
+    if(g('eu3'))g('eu3').value=CU.username3||'';
+    if(g('eu4'))g('eu4').value=CU.username4||'';
+  } else {
+    g('extra-usernames').style.display='none';
+  }
+  const ea=g('eav');ea.innerHTML=(CU.avatar_url?`<img src="${CU.avatar_url}"/>`:CU.avatar_emoji||'🐾')+'<div class="ef-ov">📷</div>';
+  g('ov-e').classList.add('show');
+}
+
+async function handleAv(inp){
+  const f=inp.files[0];if(!f)return;
+  if(f.size>2*1024*1024){toast('❌ Max 2MB!');return;}
+  _af=await compImg(f,400,.85);
+  g('eav').innerHTML=`<img src="${URL.createObjectURL(_af)}"/><div class="ef-ov">📷</div>`;
+}
+
+async function saveProfile(){
+  if(!CU)return;
+  const nm=g('en').value.trim(),un=g('eu').value.trim().toLowerCase().replace(/[^a-z0-9_]/g,'');
+  const bio=g('eb').value.trim(),tg=g('etg')?parseInt(g('etg').value)||null:null;
+  const un2=g('eu2')?g('eu2').value.trim().toLowerCase().replace(/[^a-z0-9_]/g,'')||null:null;
+  const un3=g('eu3')?g('eu3').value.trim().toLowerCase().replace(/[^a-z0-9_]/g,'')||null:null;
+  const un4=g('eu4')?g('eu4').value.trim().toLowerCase().replace(/[^a-z0-9_]/g,'')||null:null;
+  if(!nm||!un){toast('Nama dan username wajib!');return;}
+  if(un.length<3){toast('❌ Username minimal 3 karakter!');return;}
+  // Cek duplikat antar username sendiri
+  const allUns=[un,un2,un3,un4].filter(Boolean);
+  if(new Set(allUns).size!==allUns.length){toast('❌ Username tidak boleh sama satu sama lain!');return;}
+  // Cek konflik ke DB langsung per username pakai .or()
+  for(const checkUn of allUns){
+    const{data:ex}=await db.from('cp_accounts')
+      .select('id')
+      .or(`username.eq.${checkUn},username2.eq.${checkUn},username3.eq.${checkUn},username4.eq.${checkUn}`)
+      .neq('id',CU.id)
+      .maybeSingle();
+    if(ex){toast(`❌ Username @${checkUn} sudah dipakai akun lain!`);return;}
+  }
+  let av_url=CU.avatar_url;
+  if(_af){
+    const path=`avatars/${CU.id}_${Date.now()}.jpg`;
+    await db.storage.from('carpaws-media').upload(path,_af,{upsert:true});
+    const{data:{publicUrl}}=db.storage.from('carpaws-media').getPublicUrl(path);
+    av_url=publicUrl;_af=null;
+  }
+  const updatePayload={display_name:nm,username:un,bio,avatar_url:av_url,telegram_user_id:tg};
+  if(TG_ID==='8513979925'&&CU.account_type==='owner'){
+    updatePayload.username2=un2||null;
+    updatePayload.username3=un3||null;
+    updatePayload.username4=un4||null;
+  }
+  await db.from('cp_accounts').update(updatePayload).eq('id',CU.id);
+  CU={...CU,...updatePayload};
+  const idx=MYA.findIndex(a=>a.id===CU.id);if(idx>=0)MYA[idx]=CU;
+  xov('ov-e');updateTbAva();toast('✅ Profil disimpan!');
+  if(curS==='profile')loadMyProfile();
+}
+
+async function openCreate(){
+  g('ov-p').classList.add('show');
+  loadCarpetPets();
+}
+
+async function loadCarpetPets(){
+  const el=g('pc-pets');el.innerHTML=ld();
+  // Pakai TG_ID langsung — sudah pasti ada
+  if(!TG_ID){el.innerHTML=`<div style="padding:0 18px 8px;font-size:.82rem;color:var(--tx3)">Tidak bisa detect Telegram ID.</div>`;return;}
+  const{data:pets}=await db.from('pets').select('id,name,pet_type,xp,level').or(`owner1_id.eq.${TG_ID},owner2_id.eq.${TG_ID}`).eq('is_missing',false).limit(20);
+  if(!pets?.length){el.innerHTML=`<div style="padding:0 18px 8px;font-size:.82rem;color:var(--tx3)">Tidak ada pet ditemukan untuk Telegram ID ini.</div>`;return;}
+  const{data:linked}=await db.from('cp_accounts').select('carpet_pet_id').eq('telegram_user_id',TG_ID).not('carpet_pet_id','is',null);
+  const linkedIds=new Set((linked||[]).map(a=>String(a.carpet_pet_id)));
+  el.innerHTML=`<div style="padding:0 18px 4px"><div class="efl">Pet dari Carpet Shop</div></div>
+    <div style="padding:0 18px">
+    ${pets.map(p=>{
+      const em=PM[p.pet_type]||'🐾';
+      const lv=p.level||(Math.floor((p.xp||0)/100)+1);
+      const done=linkedIds.has(String(p.id));
+      const sel=_selPet===p.id;
+      return`<div class="psc${sel?' sel':''}" onclick="${done?'':`selPet(${p.id},'${esc(p.name)}','${p.pet_type}')`}" style="${done?'opacity:.55;cursor:default':''}">
+        <div class="psc-em">${em}</div>
+        <div class="psc-info"><div class="psc-name">${esc(p.name)}</div><div class="psc-type">${p.pet_type} · Lv.${lv}</div></div>
+        <div class="psc-chk${sel||done?' chk':''}">${done?'✓':sel?'✓':''}</div>
+        ${done?`<span style="font-size:.7rem;color:var(--ac2);font-weight:700">Sudah ada</span>`:''}
+      </div>`;
+    }).join('')}
+    </div>`;
+}
+
+function selPet(id,name,type){
+  _selPet=id;
+  g('np-n').value=name;g('np-u').value=name.toLowerCase().replace(/\s+/g,'_')+'_pet';g('np-e').value=PM[type]||'🐾';
+  loadCarpetPets();
+}
+
+async function createPetAcc(){
+  const nm=g('np-n').value.trim(),un=g('np-u').value.trim().toLowerCase().replace(/[^a-z0-9_]/g,''),em=g('np-e').value.trim()||'🐾';
+  if(!nm||!un){toast('Lengkapi data pet!');return;}
+  // Potong koin — sudah dikonfirmasi di addPetAccount()
+  // Kalau pilih dari Carpet Shop, ambil owner2_id dari tabel pets
+  let owner2TgId=null;
+  if(_selPet){
+    const{data:petData}=await db.from('pets').select('owner2_id').eq('id',_selPet).maybeSingle();
+    if(petData?.owner2_id && petData.owner2_id!==parseInt(TG_ID)){
+      owner2TgId=String(petData.owner2_id);
+    }
+  }
+  const{data:acc,error}=await db.from('cp_accounts').insert({
+    telegram_user_id:TG_ID,display_name:nm,username:un,
+    account_type:'pet',avatar_emoji:em,
+    carpet_pet_id:_selPet?String(_selPet):null,
+    is_verified:false,followers_count:0,claimed_rewards:[],total_likes_received:0,claimed_like_rewards:[],
+    owner2_tg_id:owner2TgId
+  }).select().single();
+  if(error){toast(error.code==='23505'?'❌ Username sudah dipakai!':'❌ Gagal buat akun!');return;}
+  MYA.push(acc);_selPet=null;xov('ov-p');toast('✅ Akun pet dibuat!');
+  // Tanya mau switch ke akun pet ini?
+  showConfirmSheet('🐾 Akun Pet Dibuat!',`<b>${esc(nm)}</b> berhasil dibuat!<br>Mau langsung switch ke akun ini?`,'Ya, Switch Sekarang',()=>{closeConfirmSheet();pickA(acc.id);confirmPick();});
+}
+
+function openSharePet(){
+  // Semua akun pet yang kamu punya (baik sebagai owner1 atau owner2)
+  const pets=MYA.filter(a=>a.account_type==='pet');
+  if(!pets.length){toast('Kamu belum punya akun pet!');return;}
+  const petOpts=pets.map(p=>`<div class="psc" onclick="selectSharePet('${p.id}','${esc(p.display_name)}')" id="sp-${p.id}">
+    <div class="psc-em">${p.avatar_emoji||'🐾'}</div>
+    <div class="psc-info"><div class="psc-name">${esc(p.display_name)}</div><div class="psc-type">@${esc(p.username)}</div></div>
+    <div class="psc-chk" id="spchk-${p.id}"></div>
+  </div>`).join('');
+  const d=document.createElement('div');
+  d.id='share-ov';d.className='overlay show';d.onclick=e=>{if(e.target.id==='share-ov')d.remove();};
+  d.innerHTML=`<div class="sheet" style="position:relative;padding-bottom:24px">
+    <div class="sh-hdl"></div>
+    <div class="sh-ttl">🔗 Share Akun Pet</div>
+    <button class="sh-close" onclick="document.getElementById('share-ov').remove()">✕</button>
+    <div style="padding:10px 18px 4px;font-size:.83rem;color:var(--tx2)">Pilih pet, lalu masukkan Telegram ID partner kamu. Partner bisa login ke akun pet ini.</div>
+    <div style="padding:0 18px">${petOpts}</div>
+    <div class="ef" style="margin-top:8px"><div class="efl">Telegram ID Partner</div>
+      <input class="efi" id="partner-tgid" type="number" placeholder="ID Telegram partner"/>
+    </div>
+    <div class="ef"><button class="btn-main" onclick="doSharePet()">Bagikan Akses 🔗</button></div>
+  </div>`;
+  document.body.appendChild(d);
+  window._sharePetId=null;
+}
+
+function selectSharePet(id,name){
+  window._sharePetId=id;
+  document.querySelectorAll('.psc').forEach(el=>el.classList.remove('sel'));
+  document.querySelectorAll('[id^="spchk-"]').forEach(el=>el.textContent='');
+  const el=document.getElementById('sp-'+id);
+  if(el){el.classList.add('sel');document.getElementById('spchk-'+id).textContent='✓';}
+}
+
+async function doSharePet(){
+  const petId=window._sharePetId;
+  const partnerTg=document.getElementById('partner-tgid')?.value?.trim();
+  if(!petId){toast('Pilih akun pet dulu!');return;}
+  if(!partnerTg){toast('Masukkan Telegram ID partner!');return;}
+  // Owner1 atau owner2 boleh share
+  const{error}=await db.from('cp_accounts').update({owner2_tg_id:partnerTg}).eq('id',petId)
+    .or(`telegram_user_id.eq.${TG_ID},owner2_tg_id.eq.${TG_ID}`);
+  if(error){toast('❌ Gagal: '+error.message);return;}
+  document.getElementById('share-ov')?.remove();
+  toast('✅ Akses berhasil dibagikan ke partner!');
+}
+
+async function openBuatOwner(){
+  // Cek DB langsung biar akurat
+  const{data:existOwner}=await db.from('cp_accounts').select('id')
+    .eq('telegram_user_id',TG_ID).eq('account_type','owner').maybeSingle();
+  if(existOwner){toast('❌ Kamu sudah punya akun owner!');return;}
+  // Tampil reg screen tab buat baru
+  g('app').style.display='none';
+  showRegScreen();
+}
+
+function openBuyUsername(){
+  xov('ov-s');
+  if(!CU){return;}
+  // Cari slot kosong berdasarkan field, bukan dari panjang array
+  // Ini fix bug overwrite: hapus username2 → nextSlot jadi 2 → overwrite username3
+  const emptySlot=!CU.username2?2:!CU.username3?3:!CU.username4?4:null;
+  if(!emptySlot){
+    toast('❌ Semua slot username sudah terpakai (maks 4)!');return;
+  }
+  const filledCount=[CU.username,CU.username2,CU.username3,CU.username4].filter(Boolean).length;
+  const d=document.createElement('div');
+  d.id='buyun-ov';d.className='overlay show';d.onclick=e=>{if(e.target.id==='buyun-ov')d.remove();};
+  d.innerHTML=`<div class="sheet" style="position:relative;padding-bottom:24px">
+    <div class="sh-hdl"></div>
+    <div class="sh-ttl">🏷️ Tambah Username</div>
+    <button class="sh-close" onclick="document.getElementById('buyun-ov').remove()">✕</button>
+    <div style="padding:10px 18px 14px">
+      <div style="background:var(--b1);border-radius:14px;padding:13px;margin-bottom:16px;font-size:.83rem;color:var(--tx2);line-height:1.7">
+        💰 Biaya: <b style="color:var(--ac2)">2.000 🪙</b><br>
+        🏷️ Slot username ${filledCount+1} dari 4<br>
+        ✨ Orang bisa cari/mention kamu via username ini
+      </div>
+      <div class="efl" style="margin-bottom:6px">USERNAME BARU</div>
+      <input class="efi" id="new-un-input" placeholder="username baru" maxlength="20" style="width:100%;margin-bottom:14px"/>
+      <button class="btn-main" onclick="doBuyUsername(${emptySlot})">Beli Username · 2.000 🪙</button>
+    </div>
+  </div>`;
+  document.body.appendChild(d);
+}
+
+async function doBuyUsername(slot){
+  const un=document.getElementById('new-un-input')?.value?.trim().toLowerCase().replace(/[^a-z0-9_]/g,'');
+  if(!un||un.length<3){toast('Username minimal 3 karakter!');return;}
+  // Cek saldo
+  const{data:u}=await db.from('users').select('koin').eq('user_id',parseInt(TG_ID)).maybeSingle();
+  if(!u||(u.koin||0)<2000){toast('❌ Koin tidak cukup! Butuh 2.000 🪙');return;}
+  // Cek username tidak bentrok
+  const{data:exUn}=await db.from('cp_accounts').select('id')
+    .or(`username.eq.${un},username2.eq.${un},username3.eq.${un},username4.eq.${un}`)
+    .neq('id',CU.id).maybeSingle();
+  if(exUn){toast('❌ Username @'+un+' sudah dipakai!');return;}
+  // Verifikasi slot masih kosong (race condition check)
+  const field=slot===2?'username2':slot===3?'username3':'username4';
+  if(CU[field]){toast('❌ Slot ini sudah terisi, coba lagi!');return;}
+  // Potong koin
+  await db.from('users').update({koin:(u.koin||0)-2000}).eq('user_id',parseInt(TG_ID));
+  const{error}=await db.from('cp_accounts').update({[field]:un}).eq('id',CU.id);
+  if(error){
+    // Refund
+    await db.from('users').update({koin:(u.koin||0)}).eq('user_id',parseInt(TG_ID));
+    if(error.code==='23505'){toast('❌ Username @'+un+' sudah dipakai!');return;}
+    toast('❌ Gagal: '+error.message);return;
+  }
+  CU={...CU,[field]:un};
+  const idx=MYA.findIndex(a=>a.id===CU.id);
+  if(idx>=0)MYA[idx]=CU;
+  document.getElementById('buyun-ov')?.remove();
+  toast('✅ Username @'+un+' berhasil ditambahkan!');
+}
+
+function openShareMenu(pid, btn){
+  // Cek apakah sudah repost
+  const isReposted=btn?.classList.contains('reposted');
+  const d=document.createElement('div');
+  d.id='sm-ov';d.className='overlay show';d.onclick=e=>{if(e.target.id==='sm-ov')d.remove();};
+  d.innerHTML=`<div class="sheet" style="padding:14px 0 28px">
+    <div class="sh-hdl"></div>
+    <div class="si" onclick="doRepost('${pid}');document.getElementById('sm-ov').remove()">
+      <div class="si-ico">🔁</div>
+      <div><div class="si-lbl">${isReposted?'Batalkan Repost':'Repost'}</div><div class="si-sub">Bagikan ke timeline followermu</div></div>
+    </div>
+    <div class="si" onclick="openQuotePost('${pid}');document.getElementById('sm-ov').remove()">
+      <div class="si-ico">✍️</div>
+      <div><div class="si-lbl">Quote Repost</div><div class="si-sub">Repost dengan tambahan komentarmu</div></div>
+    </div>
+    <div class="si" onclick="shareLink('${pid}');document.getElementById('sm-ov').remove()">
+      <div class="si-ico">🔗</div>
+      <div><div class="si-lbl">Salin Link</div><div class="si-sub">Bagikan link postingan ini</div></div>
+    </div>
+  </div>`;
+  document.body.appendChild(d);
+}
+
+async function doRepost(pid){
+  if(!CU){toast('Login dulu!');return;}
+  // Cek sudah repost atau belum
+  const{data:ex}=await db.from('cp_posts').select('id').eq('account_id',CU.id).eq('repost_of',pid).maybeSingle();
+  if(ex){
+    // Batalkan repost
+    await db.from('cp_posts').delete().eq('id',ex.id);
+    const{data:orig}=await db.from('cp_posts').select('repost_count').eq('id',pid).single();
+    await db.from('cp_posts').update({repost_count:Math.max(0,(orig?.repost_count||1)-1)}).eq('id',pid);
+    toast('🔁 Repost dibatalkan');
+  } else {
+    // Repost
+    await db.from('cp_posts').insert({
+      account_id:CU.id, content:null, is_reply:false,
+      repost_of:pid, is_repost:true
+    });
+    const{data:orig}=await db.from('cp_posts').select('repost_count,account_id').eq('id',pid).single();
+    await db.from('cp_posts').update({repost_count:(orig?.repost_count||0)+1}).eq('id',pid);
+    if(orig&&orig.account_id!==CU.id)
+      await db.from('cp_notifications').insert({to_account_id:orig.account_id,from_account_id:CU.id,type:'repost',post_id:pid});
+    toast('🔁 Reposted!');
+  }
+  if(curPID===pid)loadPD(pid);
+  else loadFeed();
+}
+
+async function openQuotePost(pid){
+  const d=document.createElement('div');
+  d.id='qp-ov';d.className='overlay show';d.onclick=e=>{if(e.target.id==='qp-ov')d.remove();};
+  // Fetch post asli untuk preview
+  const{data:origPost}=await db.from('cp_posts').select('*,account:cp_posts_account_id_fkey(*)').eq('id',pid).maybeSingle();
+  const previewHtml=origPost?origPreview(origPost):'<div style="background:var(--b1);border-radius:12px;padding:10px 12px;font-size:.82rem;color:var(--tx3);border:1.5px solid var(--border)">🔗 Memuat postingan...</div>';
+  d.innerHTML=`<div class="sheet" style="position:relative">
+    <div class="sh-hdl"></div>
+    <div class="sh-ttl">✍️ Quote Repost</div>
+    <button class="sh-close" onclick="document.getElementById('qp-ov').remove()">✕</button>
+    <div style="padding:14px 16px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--b3),var(--b5));display:flex;align-items:center;justify-content:center;font-size:1rem;overflow:hidden">
+          ${CU?.avatar_url?`<img src="${CU.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`:CU?.avatar_emoji||'🐾'}
+        </div>
+        <div><div style="font-weight:800;font-size:.88rem">${esc(CU?.display_name||'')}</div></div>
+      </div>
+      <textarea id="qp-txt" style="width:100%;min-height:80px;border:none;outline:none;font-family:var(--font);font-size:.94rem;resize:none;line-height:1.6" placeholder="Tambahkan komentarmu..."></textarea>
+      ${previewHtml}
+      <button class="btn-main" style="margin-top:14px" onclick="submitQuotePost('${pid}')">Post Quote 🔁</button>
+    </div>
+  </div>`;
+  document.body.appendChild(d);
+  setTimeout(()=>document.getElementById('qp-txt')?.focus(),300);
+}
+
+async function submitQuotePost(pid){
+  const txt=document.getElementById('qp-txt')?.value?.trim();
+  if(!txt){toast('Tulis komentar dulu!');return;}
+  if(!CU)return;
+  await db.from('cp_posts').insert({
+    account_id:CU.id, content:txt, is_reply:false,
+    repost_of:pid, is_repost:true
+  });
+  const{data:orig}=await db.from('cp_posts').select('repost_count,account_id').eq('id',pid).single();
+  await db.from('cp_posts').update({repost_count:(orig?.repost_count||0)+1}).eq('id',pid);
+  if(orig&&orig.account_id!==CU.id)
+    await db.from('cp_notifications').insert({to_account_id:orig.account_id,from_account_id:CU.id,type:'repost',post_id:pid});
+  document.getElementById('qp-ov')?.remove();
+  toast('✅ Quote repost berhasil!');
+  loadFeed();
+}
+
+function replyToCmt(displayName, accId){
+  const inp=g('ci');
+  if(!inp)return;
+  inp.value='@'+displayName+' ';
+  inp.dataset.replyTo=accId; // simpan account id untuk notif
+  inp.focus();
+  inp.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function shareLink(id){
+  const url=location.href.split('?')[0]+'?post='+id;
+  if(navigator.share)navigator.share({title:'Car Paws',url});
+  else{navigator.clipboard?.writeText(url);toast('📋 Link disalin!');}
+}
+
+function sharePost(id){shareLink(id);}
+
+function compImg(f,maxW,q){
+  return new Promise(res=>{
+    const img=new Image(),url=URL.createObjectURL(f);
+    img.onload=()=>{
+      const c=document.createElement('canvas');let w=img.width,h=img.height;
+      if(w>maxW){h=h*maxW/w;w=maxW;}c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      c.toBlob(b=>res(b||f),'image/jpeg',q);URL.revokeObjectURL(url);
+    };img.src=url;
+  });
+}
+
+function openSettings(){
+  const vBtn=g('btn-buy-verified');
+  if(vBtn){
+    if(CU?.is_verified){vBtn.textContent='✔ Sudah Verified';vBtn.style.opacity='.5';}
+    else{vBtn.textContent=`Verified (${VERIFIED_FEE} 🪙)`;vBtn.style.opacity='';}
+  }
+  g('ov-s').classList.add('show');
+}
+
+async function buyVerified(){
+  xov('ov-s');
+  if(!CU)return;
+  if(CU.is_verified){toast('✅ Akun ini sudah verified!');return;}
+  const{data:cu}=await db.from('users').select('koin').eq('user_id',parseInt(TG_ID)).maybeSingle();
+  if(!cu||(cu.koin||0)<VERIFIED_FEE){toast(`❌ Koin tidak cukup! Butuh ${VERIFIED_FEE} 🪙`);return;}
+  showConfirmSheet('✔ Beli Verified',`Akun <b>@${esc(CU.username)}</b> akan mendapat centang biru.<br><br>Biaya: <b>${VERIFIED_FEE} 🪙</b><br>Manfaat: Post selalu muncul di atas FYP.`,'Beli Verified',async()=>{
+    closeConfirmSheet();
+    const{data:cu2}=await db.from('users').select('koin').eq('user_id',parseInt(TG_ID)).maybeSingle();
+    if(!cu2||(cu2.koin||0)<VERIFIED_FEE){toast('❌ Koin tidak cukup!');return;}
+    await db.from('users').update({koin:(cu2.koin||0)-VERIFIED_FEE}).eq('user_id',parseInt(TG_ID));
+    await db.from('cp_accounts').update({is_verified:true}).eq('id',CU.id);
+    CU.is_verified=true;
+    const idx=MYA.findIndex(a=>a.id===CU.id);if(idx>=0)MYA[idx].is_verified=true;
+    toast('✅ Akun @'+CU.username+' sekarang Verified! ✔');
+    if(curS==='profile')loadMyProfile();
+  });
+}
+
+async function checkLikeReward(accId){
+  if(!accId)return;
+  const{data:a}=await db.from('cp_accounts').select('id,telegram_user_id,display_name,claimed_like_rewards').eq('id',accId).maybeSingle();
+  if(!a||!a.telegram_user_id)return;
+  // Hitung total likes semua post akun ini
+  const{data:posts}=await db.from('cp_posts').select('id').eq('account_id',accId).eq('is_reply',false);
+  if(!posts?.length)return;
+  const postIds=posts.map(p=>p.id);
+  const{count:totalLikes}=await db.from('cp_likes').select('*',{count:'exact',head:true}).in('post_id',postIds);
+  const claimed=a.claimed_like_rewards||[];
+  for(const[threshold,reward] of LIKE_REWARDS){
+    if((totalLikes||0)>=threshold&&!claimed.includes(threshold)){
+      const newClaimed=[...claimed,threshold];
+      await db.from('cp_accounts').update({
+        claimed_like_rewards:newClaimed,
+        total_likes_received:totalLikes||0
+      }).eq('id',accId);
+      const{data:cu}=await db.from('users').select('koin').eq('user_id',parseInt(a.telegram_user_id)).maybeSingle();
+      if(cu)await db.from('users').update({koin:(cu.koin||0)+reward}).eq('user_id',parseInt(a.telegram_user_id));
+      await db.from('cp_notifications').insert({
+        to_account_id:accId,from_account_id:accId,type:'reward',post_id:null
+      });
+      toast(`❤️ ${esc(a.display_name)} dapat reward ${reward.toLocaleString()} 🪙 (${threshold.toLocaleString()} likes)!`);
+    }
+  }
+}
+
+async function checkFollowerReward(accId){
+  const{data:a}=await db.from('cp_accounts').select('*').eq('id',accId).maybeSingle();
+  if(!a||!a.telegram_user_id)return;
+  const{count:flwrs}=await db.from('cp_follows').select('*',{count:'exact',head:true}).eq('following_id',accId);
+  const claimed=a.claimed_rewards||[];
+  for(const[threshold,reward] of FOLLOWER_REWARDS){
+    if(flwrs>=threshold&&!claimed.includes(threshold)){
+      const{data:cu}=await db.from('users').select('koin').eq('user_id',parseInt(a.telegram_user_id)).maybeSingle();
+      if(cu)await db.from('users').update({koin:(cu.koin||0)+reward}).eq('user_id',parseInt(a.telegram_user_id));
+      const newClaimed=[...claimed,threshold];
+      await db.from('cp_accounts').update({claimed_rewards:newClaimed}).eq('id',accId);
+      await db.from('cp_notifications').insert({to_account_id:accId,from_account_id:accId,type:'reward',post_id:null});
+      toast(`🎉 ${esc(a.display_name)} dapat reward ${reward} 🪙 (${threshold} followers)!`);
+    }
+  }
+}
+
+
+// ── Hapus komentar ──────────────────────────────────────────
+async function deleteCmt(cmtId, postId){
+  showConfirmSheet('🗑️ Hapus Komentar','Yakin mau hapus komentar ini?','Hapus',async()=>{
+    closeConfirmSheet();
+    await db.from('cp_posts').delete().eq('id',cmtId);
+    const{data:pp}=await db.from('cp_posts').select('replies_count').eq('id',postId).single();
+    if(pp)await db.from('cp_posts').update({replies_count:Math.max(0,(pp.replies_count||1)-1)}).eq('id',postId);
+    toast('🗑️ Komentar dihapus');
+    loadPD(postId);
+  });
+}
+
+// ── Kelola username (hapus username2/3/4) ────────────────────
+function openManageUsername(){
+  if(!CU)return;
+  const slots=[
+    {field:'username',val:CU.username,primary:true},
+    {field:'username2',val:CU.username2},
+    {field:'username3',val:CU.username3},
+    {field:'username4',val:CU.username4},
+  ].filter(s=>s.val);
+  const d=document.createElement('div');
+  d.id='mun-ov';d.className='overlay show';d.onclick=e=>{if(e.target.id==='mun-ov')d.remove();};
+  d.innerHTML=`<div class="sheet" style="position:relative;padding-bottom:28px">
+    <div class="sh-hdl"></div>
+    <div class="sh-ttl">✏️ Kelola Username</div>
+    <button class="sh-close" onclick="document.getElementById('mun-ov').remove()">✕</button>
+    <div style="padding:14px 18px">
+      <div style="font-size:.82rem;color:var(--tx2);margin-bottom:14px">Username utama tidak bisa dihapus, hanya bisa diubah via Edit Profil.</div>
+      ${slots.map(s=>`<div class="un-manage">
+        <div class="un-val">@${esc(s.val)} ${s.primary?'<span style="font-size:.68rem;color:var(--ac2);font-weight:700">UTAMA</span>':''}</div>
+        ${!s.primary?`<button class="un-del" onclick="doDeleteUsername('${s.field}','${s.val}')">🗑️ Hapus</button>`:''}
+      </div>`).join('')}
+      ${slots.length<4?`<div style="margin-top:8px"><button class="btn-main" onclick="document.getElementById('mun-ov').remove();openBuyUsername()">+ Tambah Username · 2.000 🪙</button></div>`:''}
+    </div>
+  </div>`;
+  document.body.appendChild(d);
+}
+
+async function doDeleteUsername(field, val){
+  showConfirmSheet('🗑️ Hapus Username',`Hapus username <b>@${esc(val)}</b>?<br>Koin tidak dikembalikan.`,'Hapus',async()=>{
+    closeConfirmSheet();
+    await db.from('cp_accounts').update({[field]:null}).eq('id',CU.id);
+    CU={...CU,[field]:null};
+    const idx=MYA.findIndex(a=>a.id===CU.id);if(idx>=0)MYA[idx]=CU;
+    document.getElementById('mun-ov')?.remove();
+    toast(`✅ Username @${val} dihapus`);
+  });
+}
+
+// ── Recover akun via username (untuk yang ke-logout) ─────────
+function openRecoverAccount(){
+  const d=document.createElement('div');
+  d.id='rec-ov';d.className='overlay show';d.onclick=e=>{if(e.target.id==='rec-ov')d.remove();};
+  d.innerHTML=`<div class="sheet" style="position:relative;padding-bottom:28px">
+    <div class="sh-hdl"></div>
+    <div class="sh-ttl">🔑 Masuk via Username</div>
+    <button class="sh-close" onclick="document.getElementById('rec-ov').remove()">✕</button>
+    <div style="padding:14px 18px">
+      <div style="font-size:.83rem;color:var(--tx2);background:var(--b1);border-radius:12px;padding:12px;margin-bottom:16px;line-height:1.6">
+        Masukkan username akun kamu. Sistem akan verifikasi bahwa Telegram ID kamu (<b>${TG_ID}</b>) cocok dengan pemilik akun tersebut.
+      </div>
+      <div class="efl" style="margin-bottom:6px">USERNAME AKUN KAMU</div>
+      <input class="efi" id="rec-un" placeholder="username (tanpa @)" maxlength="20" style="width:100%;margin-bottom:14px"/>
+      <div id="rec-err" style="color:#e03;font-size:.8rem;margin-bottom:10px;min-height:16px"></div>
+      <button class="btn-main" onclick="doRecoverAccount()">Masuk ke Akun 🔑</button>
+    </div>
+  </div>`;
+  document.body.appendChild(d);
+}
+
+async function doRecoverAccount(){
+  const un=document.getElementById('rec-un')?.value?.trim().toLowerCase().replace(/^@/,'');
+  const errEl=document.getElementById('rec-err');
+  if(!un){errEl.textContent='Masukkan username dulu!';return;}
+  // Cari akun dengan username ini
+  const{data:acc}=await db.from('cp_accounts').select('*')
+    .or(`username.eq.${un},username2.eq.${un},username3.eq.${un},username4.eq.${un}`)
+    .maybeSingle();
+  if(!acc){errEl.textContent='Akun dengan username @'+un+' tidak ditemukan!';return;}
+  // Verifikasi TG_ID cocok
+  if(String(acc.telegram_user_id)!==String(TG_ID)&&String(acc.owner2_tg_id)!==String(TG_ID)){
+    errEl.textContent='❌ Telegram ID kamu tidak cocok dengan pemilik akun ini!';return;
+  }
+  // Akses valid
+  if(!MYA.find(a=>a.id===acc.id))MYA.push(acc);
+  CU=acc;
+  localStorage.setItem(SESS_KEY(),CU.id);
+  document.getElementById('rec-ov')?.remove();
+  g('reg-screen').style.display='none';
+  startApp();
+  toast('✅ Berhasil masuk kembali ke @'+un+'!');
+}
+
+
+// ══════════════════════════════════════════════════════════
+// BOOKMARK
+// ══════════════════════════════════════════════════════════
+let _bookmarks=new Set();
+async function loadBookmarks(){
+  if(!CU)return;
+  try{
+    const{data,error}=await db.from('cp_bookmarks').select('post_id').eq('account_id',CU.id);
+    if(error){}
+    _bookmarks=new Set((data||[]).map(b=>b.post_id));
+    // Update UI semua bookmark button yang ada
+    _bookmarks.forEach(pid=>{
+      const btn=document.getElementById('bm-'+pid);
+      if(btn)btn.querySelector('svg')?.setAttribute('fill','var(--ac)');
+    });
+  }catch(e){}
+}
+async function toggleBookmark(pid,btn){
+  if(!CU)return;
+  const svg=btn.querySelector('svg');
+  if(_bookmarks.has(pid)){
+    await db.from('cp_bookmarks').delete().eq('account_id',CU.id).eq('post_id',pid);
+    _bookmarks.delete(pid);
+    svg?.setAttribute('fill','none');
+    toast('🔖 Bookmark dihapus');
+  } else {
+    await db.from('cp_bookmarks').insert({account_id:CU.id,post_id:pid});
+    _bookmarks.add(pid);
+    svg?.setAttribute('fill','var(--ac)');
+    toast('🔖 Disimpan ke Bookmark!');
+  }
+}
+async function openBookmarks(){
+  xov('ov-s');
+  const d=document.createElement('div');
+  d.id='bm-ov';d.className='overlay show';d.style.cssText='display:flex;';
+  d.onclick=e=>{if(e.target.id==='bm-ov')d.remove();};
+  d.innerHTML=`<div class="sheet" style="position:relative;max-height:90vh">
+    <div class="sh-hdl"></div>
+    <div class="sh-ttl">🔖 Bookmark</div>
+    <button class="sh-close" onclick="document.getElementById('bm-ov').remove()">✕</button>
+    <div id="bm-list">${ld()}</div>
+  </div>`;
+  document.body.appendChild(d);
+  if(!CU){document.getElementById('bm-list').innerHTML=emp('🔖','Login dulu','');return;}
+  const{data:bms}=await db.from('cp_bookmarks').select('post_id').eq('account_id',CU.id).order('created_at',{ascending:false});
+  if(!bms?.length){document.getElementById('bm-list').innerHTML=emp('🔖','Belum ada bookmark','Tap 🔖 di postingan untuk simpan');return;}
+  const ids=bms.map(b=>b.post_id);
+  const{data:posts}=await db.from('cp_posts').select('*,account:cp_posts_account_id_fkey(*)').in('id',ids);
+  document.getElementById('bm-list').innerHTML=(posts||[]).map(p=>pc(p)).join('');
+}
+
+// ══════════════════════════════════════════════════════════
+// PIN POST
+// ══════════════════════════════════════════════════════════
+async function pinPost(pid){
+  if(!CU)return;
+  await db.from('cp_accounts').update({pinned_post_id:pid}).eq('id',CU.id);
+  CU.pinned_post_id=pid;
+  toast('📌 Post dipinned!');
+  if(document.getElementById('pm-ov'))document.getElementById('pm-ov').remove();
+  loadMyProfile();
+}
+async function unpinPost(){
+  if(!CU)return;
+  await db.from('cp_accounts').update({pinned_post_id:null}).eq('id',CU.id);
+  CU.pinned_post_id=null;
+  toast('📌 Pin dicopot');
+  loadMyProfile();
+}
+
+// ══════════════════════════════════════════════════════════
+// GANTI HEADER (nama & logo app)
+// ══════════════════════════════════════════════════════════
+function openEditHeader(){
+  xov('ov-s');
+  if(TG_ID!==OWNER_TG_ID){toast('❌ Hanya owner yang bisa ganti header!');return;}
+  const d=document.createElement('div');
+  d.id='hdr-ov';d.className='overlay show';d.onclick=e=>{if(e.target.id==='hdr-ov')d.remove();};
+  const curTitle=g('tb-title').textContent;
+  const curLogo=g('tb-logo').src;
+  d.innerHTML=`<div class="sheet" style="position:relative;padding-bottom:24px">
+    <div class="sh-hdl"></div>
+    <div class="sh-ttl">✏️ Edit Header</div>
+    <button class="sh-close" onclick="document.getElementById('hdr-ov').remove()">✕</button>
+    <div style="padding:14px 18px">
+      <div class="efl" style="margin-bottom:6px">NAMA APP</div>
+      <input class="efi" id="hdr-title" value="${esc(curTitle)}" maxlength="20" style="width:100%;margin-bottom:14px"/>
+      <div class="efl" style="margin-bottom:6px">URL LOGO (opsional)</div>
+      <input class="efi" id="hdr-logo" value="${esc(curLogo)}" style="width:100%;margin-bottom:14px" placeholder="https://..."/>
+      <button class="btn-main" onclick="saveHeader()">Simpan Header</button>
+    </div>
+  </div>`;
+  document.body.appendChild(d);
+}
+function saveHeader(){
+  const title=document.getElementById('hdr-title')?.value?.trim();
+  const logo=document.getElementById('hdr-logo')?.value?.trim();
+  if(title){
+    g('tb-title').textContent=title;
+    document.title=title;
+    localStorage.setItem('cp_header_title',title);
+  }
+  if(logo){
+    g('tb-logo').src=logo;
+    localStorage.setItem('cp_header_logo',logo);
+  }
+  document.getElementById('hdr-ov')?.remove();
+  toast('✅ Header diperbarui!');
+}
+function initHeader(){
+  const title=localStorage.getItem('cp_header_title');
+  const logo=localStorage.getItem('cp_header_logo');
+  if(title){g('tb-title').textContent=title;document.title=title;}
+  if(logo)g('tb-logo').src=logo;
+}
+
+// ══════════════════════════════════════════════════════════
+// STICKER SYSTEM
+// ══════════════════════════════════════════════════════════
+let _stkCtx=null,_stkPacks=[],_stkCurPack=null;
+
+async function openStkFor(ctx){
+  _stkCtx=ctx;
+  const picker=g('stk-picker');
+  picker.classList.add('show');
+  await loadStkPacks();
+}
+function closeStk(){g('stk-picker').classList.remove('show');_stkCtx=null;}
+
+async function loadStkPacks(){
+  if(!CU)return;
+  // Ambil pack milik sendiri + yang disave
+  const[{data:own},{data:saved}]=await Promise.all([
+    db.from('cp_sticker_packs').select('*').eq('creator_id',CU.id),
+    db.from('cp_saved_packs').select('pack_id,cp_sticker_packs(*)').eq('account_id',CU.id)
+  ]);
+  const savedPacks=(saved||[]).map(s=>s.cp_sticker_packs).filter(Boolean);
+  const allPacks=[...(own||[]),...savedPacks.filter(p=>p.creator_id!==CU.id)];
+  _stkPacks=allPacks;
+  const tabs=g('stk-tabs');
+  if(!tabs)return;
+  if(!allPacks.length){
+    tabs.innerHTML='<div style="font-size:.8rem;color:var(--tx3);padding:4px">Belum ada sticker. Buat pack dulu!</div>';
+    g('stk-grid').innerHTML='';
+    return;
+  }
+  tabs.innerHTML=allPacks.map((p,i)=>`<button class="stk-pack-tab${i===0?' on':''}" onclick="selectStkPack('${p.id}',this)">${esc(p.name)}</button>`).join('');
+  _stkCurPack=allPacks[0].id;
+  loadStkGrid(allPacks[0].id);
+}
+
+async function selectStkPack(packId,btn){
+  document.querySelectorAll('.stk-pack-tab').forEach(x=>x.classList.remove('on'));
+  btn.classList.add('on');
+  _stkCurPack=packId;
+  loadStkGrid(packId);
+}
+
+async function loadStkGrid(packId){
+  const grid=g('stk-grid');
+  grid.innerHTML=ld();
+  const{data:stks}=await db.from('cp_stickers').select('*').eq('pack_id',packId).order('created_at');
+  if(!stks?.length){grid.innerHTML='<div style="padding:20px;color:var(--tx3);font-size:.82rem;text-align:center">Belum ada stiker di pack ini</div>';return;}
+  grid.innerHTML=stks.map(s=>`<div class="stk-item" onclick="sendSticker('${s.id}','${s.image_url}')">
+    <img src="${s.image_url}" loading="lazy"/>
+  </div>`).join('');
+}
+
+async function sendSticker(stkId, stkUrl){
+  closeStk();
+  if(!CU)return;
+  if(_stkCtx==='cmt'&&curPID){
+    // Kirim sticker sebagai komentar (simpan URL di content dengan prefix)
+    await db.from('cp_posts').insert({account_id:CU.id,content:'[sticker]'+stkUrl,is_reply:true,reply_to:curPID});
+    const{data:pp}=await db.from('cp_posts').select('replies_count,account_id').eq('id',curPID).single();
+    if(pp){
+      await db.from('cp_posts').update({replies_count:(pp.replies_count||0)+1}).eq('id',curPID);
+      if(pp.account_id!==CU.id)db.from('cp_notifications').insert({to_account_id:pp.account_id,from_account_id:CU.id,type:'comment',post_id:curPID});
+    }
+    loadPD(curPID);
+  } else if(_stkCtx==='post'){
+    // Kirim sticker sebagai post
+    await db.from('cp_posts').insert({account_id:CU.id,content:null,media_url:stkUrl,media_type:'image',is_reply:false});
+    _feedCache=null;
+    if(curS==='home')loadFeed(true);
+    toast('✅ Stiker diposting!');
+  } else if(_stkCtx==='dm'&&_dmTarget){
+    await db.from('cp_messages').insert({from_account_id:CU.id,to_account_id:_dmTarget,content:null,sticker_url:stkUrl});
+    loadDMMessages(_dmTarget);
+  }
+}
+
+async function openCreateStickerPack(){
+  closeStk();
+  const d=document.createElement('div');
+  d.id='csp-ov';d.className='overlay show';d.onclick=e=>{if(e.target.id==='csp-ov')d.remove();};
+  d.innerHTML=`<div class="sheet" style="position:relative;padding-bottom:24px">
+    <div class="sh-hdl"></div>
+    <div class="sh-ttl">🎨 Buat Sticker Pack</div>
+    <button class="sh-close" onclick="document.getElementById('csp-ov').remove()">✕</button>
+    <div style="padding:14px 18px">
+      <div class="efl" style="margin-bottom:6px">NAMA PACK</div>
+      <input class="efi" id="csp-name" placeholder="Nama sticker pack" maxlength="30" style="width:100%;margin-bottom:14px"/>
+      <div class="efl" style="margin-bottom:6px">UPLOAD STIKER (maks 5MB, PNG/JPG/GIF)</div>
+      <input type="file" id="csp-files" accept="image/*" multiple style="display:none" onchange="previewStkFiles(this)"/>
+      <button class="btn-out" onclick="document.getElementById('csp-files').click()" style="width:100%;margin-bottom:10px">📁 Pilih Gambar</button>
+      <div id="csp-preview" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px"></div>
+      <button class="btn-main" onclick="createStickerPack()">Buat Pack 🎨</button>
+    </div>
+  </div>`;
+  document.body.appendChild(d);
+}
+
+let _stkFiles=[];
+function previewStkFiles(inp){
+  _stkFiles=Array.from(inp.files).slice(0,20);
+  const prev=document.getElementById('csp-preview');
+  prev.innerHTML=_stkFiles.map((f,i)=>`<div style="aspect-ratio:1;border-radius:10px;overflow:hidden;background:var(--b1)"><img src="${URL.createObjectURL(f)}" style="width:100%;height:100%;object-fit:cover"/></div>`).join('');
+}
+
+async function createStickerPack(){
+  const name=document.getElementById('csp-name')?.value?.trim();
+  if(!name){toast('Kasih nama pack dulu!');return;}
+  if(!_stkFiles.length){toast('Upload stiker dulu!');return;}
+  if(!CU)return;
+  const btn=document.querySelector('#csp-ov .btn-main');
+  btn.disabled=true;btn.textContent='Mengupload...';
+  // Buat pack
+  const{data:pack,error}=await db.from('cp_sticker_packs').insert({creator_id:CU.id,name}).select().single();
+  if(error){toast('❌ Gagal buat pack!');btn.disabled=false;btn.textContent='Buat Pack 🎨';return;}
+  // Upload stiker satu-satu
+  let success=0;
+  for(const f of _stkFiles){
+    const path=`stickers/${pack.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${f.name.split('.').pop()}`;
+    const{error:upErr}=await db.storage.from('carpaws-media').upload(path,f,{upsert:true});
+    if(!upErr){
+      const{data:{publicUrl}}=db.storage.from('carpaws-media').getPublicUrl(path);
+      await db.from('cp_stickers').insert({pack_id:pack.id,creator_id:CU.id,image_url:publicUrl});
+      success++;
+    }
+  }
+  document.getElementById('csp-ov')?.remove();
+  toast(`✅ Pack "${name}" dibuat dengan ${success} stiker!`);
+  _stkFiles=[];
+}
+
+async function saveStickerPack(packId){
+  if(!CU)return;
+  const{data:ex}=await db.from('cp_saved_packs').select('id').eq('account_id',CU.id).eq('pack_id',packId).maybeSingle();
+  if(ex){toast('Sudah disave!');return;}
+  await db.from('cp_saved_packs').insert({account_id:CU.id,pack_id:packId});
+  toast('✅ Sticker pack disimpan!');
+}
+
+// ══════════════════════════════════════════════════════════
+// DM (Direct Messages)
+// ══════════════════════════════════════════════════════════
+let _dmTarget=null,_dmPollTimer=null;
+
+async function openDMList(){
+  // Tampilkan list DM (inbox)
+  const d=document.createElement('div');
+  d.id='dml-ov';d.style.cssText='position:fixed;inset:0;background:var(--b0);z-index:491;display:flex;flex-direction:column;';
+  d.innerHTML=`<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--card);border-bottom:1.5px solid var(--border);flex-shrink:0">
+    <button onclick="document.getElementById('dml-ov').remove()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--tx)">←</button>
+    <span style="font-family:'Fredoka One',cursive;font-size:1.1rem;color:var(--tx);flex:1">💬 Pesan</span>
+  </div>
+  <div id="dm-inbox" style="flex:1;overflow-y:auto">${ld()}</div>`;
+  document.body.appendChild(d);
+  if(!CU){document.getElementById('dm-inbox').innerHTML=emp('💬','Login dulu','');return;}
+  // Mark dm pip
+  g('dm-pip')?.classList.remove('show');
+  // Load semua konversasi
+  const{data:msgs}=await db.from('cp_messages')
+    .select('*,from_acc:cp_accounts!from_account_id(id,display_name,username,avatar_url,avatar_emoji),to_acc:cp_accounts!to_account_id(id,display_name,username,avatar_url,avatar_emoji)')
+    .or(`from_account_id.eq.${CU.id},to_account_id.eq.${CU.id}`)
+    .order('created_at',{ascending:false});
+  // Group by conversation partner
+  const seen=new Set();const convs=[];
+  for(const m of (msgs||[])){
+    const partner=m.from_account_id===CU.id?m.to_acc:m.from_acc;
+    if(!partner||seen.has(partner.id))continue;
+    seen.add(partner.id);
+    convs.push({partner,lastMsg:m});
+  }
+  const inbox=document.getElementById('dm-inbox');
+  if(!convs.length){inbox.innerHTML=emp('💬','Belum ada pesan','Mulai DM seseorang dari profil mereka');return;}
+  inbox.innerHTML=convs.map(c=>{
+    const p=c.partner;
+    const av=p.avatar_url?`<img src="${p.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`:p.avatar_emoji||'🐾';
+    const isUnread=!c.lastMsg.is_read&&c.lastMsg.to_account_id===CU.id;
+    const preview=c.lastMsg.sticker_url?'🎨 Stiker':(c.lastMsg.content?.startsWith('[sticker]')?'🎨 Stiker':c.lastMsg.content?.substring(0,40)||'');
+    return`<div class="dm-list-item${isUnread?' unread':''}" onclick="document.getElementById('dml-ov').remove();openDMWith('${p.id}')">
+      <div style="width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--b3),var(--b5));display:flex;align-items:center;justify-content:center;font-size:1.2rem;overflow:hidden;flex-shrink:0">${av}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:800;font-size:.9rem">${esc(p.display_name)}</div>
+        <div style="font-size:.78rem;color:var(--tx2)">@${esc(p.username)}</div>
+        <div style="font-size:.78rem;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(preview)}</div>
+      </div>
+      ${isUnread?'<div style="width:8px;height:8px;border-radius:50%;background:#FF6B8A;flex-shrink:0"></div>':''}
+    </div>`;
+  }).join('');
+}
+
+async function openDMWith(accId){
+  if(!CU){toast('Login dulu!');return;}
+  _dmTarget=accId;
+  const{data:acc}=await db.from('cp_accounts').select('*').eq('id',accId).single();
+  if(!acc)return;
+  const scr=g('dm-screen');
+  scr.style.display='flex';
+  const ava=g('dm-screen-ava');
+  ava.innerHTML=acc.avatar_url?`<img src="${acc.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`:acc.avatar_emoji||'🐾';
+  g('dm-screen-name').textContent=acc.display_name;
+  g('dm-screen-handle').textContent='@'+acc.username;
+  g('dm-inp').value='';
+  await loadDMMessages(accId);
+  // Mark as read
+  db.from('cp_messages').update({is_read:true}).eq('to_account_id',CU.id).eq('from_account_id',accId);
+  // Poll new messages every 8s
+  if(_dmPollTimer)clearInterval(_dmPollTimer);
+  _dmPollTimer=setInterval(()=>loadDMMessages(accId),4000);
+}
+
+async function loadDMMessages(accId){
+  const el=g('dm-msgs');if(!el||!CU)return;
+  const{data:msgs}=await db.from('cp_messages')
+    .select('*,from_acc:cp_accounts!from_account_id(id,display_name,avatar_url,avatar_emoji)')
+    .or(`and(from_account_id.eq.${CU.id},to_account_id.eq.${accId}),and(from_account_id.eq.${accId},to_account_id.eq.${CU.id})`)
+    .order('created_at');
+  if(!msgs?.length){el.innerHTML=`<div style="text-align:center;padding:40px 20px;color:var(--tx3);font-size:.85rem">Mulai percakapan! 👋</div>`;return;}
+  el.innerHTML=msgs.map(m=>{
+    const isMine=m.from_account_id===CU.id;
+    const isSticker=m.sticker_url||(m.content?.startsWith('[sticker]'));
+    const stkUrl=m.sticker_url||(m.content?.startsWith('[sticker]')?m.content.replace('[sticker]',''):null);
+    return`<div class="dm-msg${isMine?' mine':''}">
+      ${!isMine?`<div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--b3),var(--b5));display:flex;align-items:center;justify-content:center;font-size:.8rem;overflow:hidden;flex-shrink:0;align-self:flex-end">
+        ${m.from_acc?.avatar_url?`<img src="${m.from_acc.avatar_url}" style="width:100%;height:100%;object-fit:cover"/>`:m.from_acc?.avatar_emoji||'🐾'}
+      </div>`:''}
+      ${isSticker&&stkUrl
+        ?`<div class="dm-sticker"><img src="${stkUrl}"/></div>`
+        :`<div class="dm-bubble${isMine?' mine':' theirs'}">${esc(m.content||'')}</div>`}
+    </div>`;
+  }).join('');
+  el.scrollTop=el.scrollHeight;
+}
+
+async function sendDM(){
+  const inp=g('dm-inp');const txt=inp.value.trim();
+  if(!txt||!CU||!_dmTarget)return;
+  inp.value='';
+  await db.from('cp_messages').insert({from_account_id:CU.id,to_account_id:_dmTarget,content:txt});
+  loadDMMessages(_dmTarget);
+  // Notif
+  db.from('cp_notifications').insert({to_account_id:_dmTarget,from_account_id:CU.id,type:'dm',post_id:null});
+  g('dm-pip')?.classList.remove('show');
+}
+
+function closeDMScreen(){
+  g('dm-screen').style.display='none';
+  _dmTarget=null;
+  if(_dmPollTimer){clearInterval(_dmPollTimer);_dmPollTimer=null;}
+}
+
+async function checkDMDot(){
+  if(!CU)return;
+  const{count}=await db.from('cp_messages').select('*',{count:'exact',head:true}).eq('to_account_id',CU.id).eq('is_read',false);
+  if(count>0)g('dm-pip')?.classList.add('show');
+}
+
+// ── Dark Mode ────────────────────────────────────────────────
+function toggleDarkMode(){
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+  setDarkMode(!isDark);
+}
+function setDarkMode(on){
+  document.documentElement.setAttribute('data-theme',on?'dark':'light');
+  localStorage.setItem('cp_dark',on?'1':'0');
+  const ico=g('dm-ico'),lbl=g('dm-lbl'),sub=g('dm-sub'),tog=g('dm-toggle'),knob=g('dm-knob');
+  if(ico)ico.textContent=on?'☀️':'🌙';
+  if(lbl)lbl.textContent=on?'Light Mode':'Dark Mode';
+  if(sub)sub.textContent=on?'Ganti ke tampilan terang':'Tampilan gelap';
+  if(tog)tog.style.background=on?'var(--ac)':'var(--b3)';
+  if(knob)knob.style.transform=on?'translateX(18px)':'translateX(0)';
+}
+function initDarkMode(){
+  const saved=localStorage.getItem('cp_dark');
+  const prefersDark=window.matchMedia?.('(prefers-color-scheme:dark)').matches;
+  setDarkMode(saved!==null?saved==='1':prefersDark);
+}
+function g(id){return document.getElementById(id);}
+function v(id){return g(id)?.value?.trim()||'';}
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function ago(d){const s=Math.floor((Date.now()-new Date(d))/1000);if(s<60)return s+'d';const m=Math.floor(s/60);if(m<60)return m+'m';const h=Math.floor(m/60);if(h<24)return h+'j';return Math.floor(h/24)+'hr';}
+function toast(m){const t=g('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
+function ld(){return'<div class="ld"><span></span><span></span><span></span></div>';}
+function emp(i,t,s){return`<div class="emp"><div class="emp-i">${i}</div><div class="emp-t">${t}</div>${s?`<div class="emp-s">${s}</div>`:''}</div>`;}
+function xov(id){g(id).classList.remove('show');}
+function ovc(e,id){if(e.target.id===id)xov(id);}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+</script>
+</body>
+</html>
